@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Api/Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Accounting/">
+    <Project Path="src/Accounting/Accounting.csproj" />
+  </Folder>
+  <Folder Name="/src/Accounting/Domain/">
+    <Project Path="src/Accounting/Domain/Accounting.Domain.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Accounting.Tests/Accounting.Tests.csproj" />
+    <Project Path="tests/Accounting.ArchTests/Accounting.ArchTests.csproj" />
+    <Project Path="tests/Accounting.IntegrationTests/Accounting.IntegrationTests.csproj" />
+    <Project Path="tests/Accounting.ApiTests/Accounting.ApiTests.csproj" />
+  </Folder>
+</Solution>

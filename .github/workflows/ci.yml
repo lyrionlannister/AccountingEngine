@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_NOLOGO: "1"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+
+jobs:
+  architecture-tests:
+    name: ArchitectureTests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - run: dotnet restore api/AccountingEngine.slnx
+      - run: dotnet test api/tests/Accounting.ArchTests/Accounting.ArchTests.csproj --configuration Release --no-restore
+
+  unit-tests:
+    name: UnitTests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - run: dotnet restore api/AccountingEngine.slnx
+      - run: dotnet test api/tests/Accounting.Tests/Accounting.Tests.csproj --configuration Release --no-restore
+
+  integration-tests:
+    name: IntegrationTests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - run: dotnet restore api/AccountingEngine.slnx
+      - run: dotnet test api/tests/Accounting.IntegrationTests/Accounting.IntegrationTests.csproj --configuration Release --no-restore
+
+  api-tests:
+    name: ApiTests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - run: dotnet restore api/AccountingEngine.slnx
+      - run: dotnet test api/tests/Accounting.ApiTests/Accounting.ApiTests.csproj --configuration Release --no-restore

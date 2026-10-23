@@ -11,5 +11,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Accounting.Tests/Accounting.Tests.csproj" />
     <Project Path="tests/Accounting.ArchTests/Accounting.ArchTests.csproj" />
+    <Project Path="tests/Accounting.IntegrationTests/Accounting.IntegrationTests.csproj" />
+    <Project Path="tests/Accounting.ApiTests/Accounting.ApiTests.csproj" />
   </Folder>
 </Solution>

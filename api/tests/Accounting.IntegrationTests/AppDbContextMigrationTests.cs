@@ -7,7 +7,7 @@ namespace Accounting.IntegrationTests;
 public sealed class AppDbContextMigrationTests : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
-        .WithImage("postgres:16-alpine")
+        .WithImage("postgres:18-alpine")
         .Build();
 
     public Task InitializeAsync() => _postgres.StartAsync();

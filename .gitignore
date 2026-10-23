@@ -1,0 +1,17 @@
+.claude/
+CLAUDE.md
+
+# Build artifacts
+artifacts/
+*.user
+
+# IDE
+.vs/
+.idea/
+
+# Secrets / local environment
+.env
+appsettings.*.local.json
+
+# Postgres container volume data bind mounts (if ever added)
+.pgdata/

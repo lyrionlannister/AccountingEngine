@@ -1,0 +1,6 @@
+artifacts/
+**/.vs/
+**/.vscode/
+**/.idea/
+tests/
+*.slnx

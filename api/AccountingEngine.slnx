@@ -8,10 +8,23 @@
   <Folder Name="/src/Accounting/Domain/">
     <Project Path="src/Accounting/Domain/Accounting.Domain.csproj" />
   </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/Shared.csproj" />
+  </Folder>
+  <Folder Name="/src/Companies/">
+    <Project Path="src/Companies/Companies.csproj" />
+  </Folder>
+  <Folder Name="/src/Companies/Domain/">
+    <Project Path="src/Companies/Domain/Companies.Domain.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Accounting.Tests/Accounting.Tests.csproj" />
     <Project Path="tests/Accounting.ArchTests/Accounting.ArchTests.csproj" />
     <Project Path="tests/Accounting.IntegrationTests/Accounting.IntegrationTests.csproj" />
     <Project Path="tests/Accounting.ApiTests/Accounting.ApiTests.csproj" />
+    <Project Path="tests/Shared.Tests/Shared.Tests.csproj" />
+    <Project Path="tests/Companies.Tests/Companies.Tests.csproj" />
+    <Project Path="tests/Companies.ArchTests/Companies.ArchTests.csproj" />
+    <Project Path="tests/Companies.IntegrationTests/Companies.IntegrationTests.csproj" />
   </Folder>
 </Solution>

@@ -41,7 +41,7 @@ public sealed class JournalEntryRepository : IJournalEntryRepository
         await LockAndRequirePeriodOpenAsync(entry.CompanyId, entry.AccountingPeriodId, cancellationToken);
 
         await _context.VoucherTypes
-            .FromSqlInterpolated($"SELECT * FROM voucher_types WHERE id = {entry.VoucherTypeId} AND company_id = {entry.CompanyId} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT * FROM tipos_comprobante WHERE id = {entry.VoucherTypeId} AND empresa_id = {entry.CompanyId} FOR UPDATE")
             .SingleOrDefaultAsync(cancellationToken);
 
         var maxSequence = await _context.JournalEntries
@@ -65,7 +65,7 @@ public sealed class JournalEntryRepository : IJournalEntryRepository
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException
         {
             SqlState: PostgresErrorCodes.UniqueViolation,
-            ConstraintName: "ix_journal_entries_idempotency_source"
+            ConstraintName: "ix_asientos_contables_idempotencia_origen"
         })
         {
             throw new JournalEntryIdempotencyConflictException(entry.SourceModule, entry.SourceReference!);
@@ -73,7 +73,7 @@ public sealed class JournalEntryRepository : IJournalEntryRepository
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException
         {
             SqlState: PostgresErrorCodes.UniqueViolation,
-            ConstraintName: "ix_journal_entries_company_voucher_sequence"
+            ConstraintName: "ix_asientos_contables_empresa_comprobante_secuencia"
         })
         {
             throw new JournalEntrySequenceConflictException(entry.CompanyId, entry.VoucherTypeId, entry.SequenceNumber!.Value);
@@ -83,7 +83,7 @@ public sealed class JournalEntryRepository : IJournalEntryRepository
     private async Task LockAndRequirePeriodOpenAsync(long companyId, long accountingPeriodId, CancellationToken cancellationToken)
     {
         var period = await _context.AccountingPeriods
-            .FromSqlInterpolated($"SELECT * FROM accounting_periods WHERE id = {accountingPeriodId} AND company_id = {companyId} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT * FROM periodos_contables WHERE id = {accountingPeriodId} AND empresa_id = {companyId} FOR UPDATE")
             .SingleOrDefaultAsync(cancellationToken)
             ?? throw new InvalidOperationException($"Accounting period {accountingPeriodId} not found.");
 

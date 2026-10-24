@@ -23,10 +23,10 @@ public sealed class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasPostgresEnum<AccountNature>(name: "account_nature");
-        modelBuilder.HasPostgresEnum<AccountType>(name: "account_type");
-        modelBuilder.HasPostgresEnum<PeriodStatus>(name: "period_status");
-        modelBuilder.HasPostgresEnum<JournalEntryStatus>(name: "journal_entry_status");
+        modelBuilder.HasPostgresEnum<AccountNature>(name: "naturaleza_cuenta");
+        modelBuilder.HasPostgresEnum<AccountType>(name: "tipo_cuenta");
+        modelBuilder.HasPostgresEnum<PeriodStatus>(name: "estado_periodo");
+        modelBuilder.HasPostgresEnum<JournalEntryStatus>(name: "estado_asiento");
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }

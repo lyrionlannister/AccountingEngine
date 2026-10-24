@@ -21,10 +21,10 @@ namespace Accounting.Persistence.Migrations
                 .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "account_nature", new[] { "debit", "credit" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "account_type", new[] { "asset", "liability", "equity", "revenue", "expense" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "journal_entry_status", new[] { "draft", "posted", "voided" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "period_status", new[] { "open", "closed" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "estado_asiento", new[] { "draft", "posted", "voided" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "estado_periodo", new[] { "open", "closed" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "naturaleza_cuenta", new[] { "debit", "credit" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "tipo_cuenta", new[] { "asset", "liability", "equity", "revenue", "expense" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Accounting.Domain.Account", b =>
@@ -38,53 +38,53 @@ namespace Accounting.Persistence.Migrations
 
                     b.Property<bool>("AllowsPosting")
                         .HasColumnType("boolean")
-                        .HasColumnName("allows_posting");
+                        .HasColumnName("permite_movimientos");
 
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
-                        .HasColumnName("code");
+                        .HasColumnName("codigo");
 
                     b.Property<long>("CompanyId")
                         .HasColumnType("bigint")
-                        .HasColumnName("company_id");
+                        .HasColumnName("empresa_id");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
-                        .HasColumnName("is_active");
+                        .HasColumnName("activo");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
-                        .HasColumnName("name");
+                        .HasColumnName("nombre");
 
                     b.Property<AccountNature>("Nature")
-                        .HasColumnType("account_nature")
-                        .HasColumnName("nature");
+                        .HasColumnType("naturaleza_cuenta")
+                        .HasColumnName("naturaleza");
 
                     b.Property<long?>("ParentAccountId")
                         .HasColumnType("bigint")
-                        .HasColumnName("parent_account_id");
+                        .HasColumnName("cuenta_padre_id");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("public_id")
+                        .HasColumnName("id_publico")
                         .HasDefaultValueSql("uuidv7()");
 
                     b.Property<bool>("RequiresCostCenter")
                         .HasColumnType("boolean")
-                        .HasColumnName("requires_cost_center");
+                        .HasColumnName("requiere_centro_costo");
 
                     b.Property<bool>("RequiresParty")
                         .HasColumnType("boolean")
-                        .HasColumnName("requires_party");
+                        .HasColumnName("requiere_tercero");
 
                     b.Property<AccountType>("Type")
-                        .HasColumnType("account_type")
-                        .HasColumnName("account_type");
+                        .HasColumnType("tipo_cuenta")
+                        .HasColumnName("tipo_cuenta");
 
                     b.HasKey("Id");
 
@@ -98,7 +98,7 @@ namespace Accounting.Persistence.Migrations
 
                     b.HasIndex("CompanyId", "ParentAccountId");
 
-                    b.ToTable("accounts", (string)null);
+                    b.ToTable("cuentas", (string)null);
                 });
 
             modelBuilder.Entity("Accounting.Domain.AccountBalanceSnapshot", b =>
@@ -112,23 +112,23 @@ namespace Accounting.Persistence.Migrations
 
                     b.Property<long>("AccountId")
                         .HasColumnType("bigint")
-                        .HasColumnName("account_id");
+                        .HasColumnName("cuenta_id");
 
                     b.Property<long>("AccountingPeriodId")
                         .HasColumnType("bigint")
-                        .HasColumnName("accounting_period_id");
+                        .HasColumnName("periodo_contable_id");
 
                     b.Property<DateTimeOffset>("CalculatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("calculated_at");
+                        .HasColumnName("calculado_en");
 
                     b.Property<decimal>("CreditTotal")
                         .HasColumnType("numeric(18,2)")
-                        .HasColumnName("credit_total");
+                        .HasColumnName("total_credito");
 
                     b.Property<decimal>("DebitTotal")
                         .HasColumnType("numeric(18,2)")
-                        .HasColumnName("debit_total");
+                        .HasColumnName("total_debito");
 
                     b.HasKey("Id");
 
@@ -137,7 +137,7 @@ namespace Accounting.Persistence.Migrations
                     b.HasIndex("AccountingPeriodId", "AccountId")
                         .IsUnique();
 
-                    b.ToTable("account_balance_snapshots", (string)null);
+                    b.ToTable("saldos_cuenta", (string)null);
                 });
 
             modelBuilder.Entity("Accounting.Domain.AccountingPeriod", b =>
@@ -151,40 +151,40 @@ namespace Accounting.Persistence.Migrations
 
                     b.Property<DateTimeOffset?>("ClosedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("closed_at");
+                        .HasColumnName("cerrado_en");
 
                     b.Property<string>("ClosedBy")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("closed_by");
+                        .HasColumnName("cerrado_por");
 
                     b.Property<long>("CompanyId")
                         .HasColumnType("bigint")
-                        .HasColumnName("company_id");
+                        .HasColumnName("empresa_id");
 
                     b.Property<DateOnly>("EndDate")
                         .HasColumnType("date")
-                        .HasColumnName("end_date");
+                        .HasColumnName("fecha_fin");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("name");
+                        .HasColumnName("nombre");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("public_id")
+                        .HasColumnName("id_publico")
                         .HasDefaultValueSql("uuidv7()");
 
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date")
-                        .HasColumnName("start_date");
+                        .HasColumnName("fecha_inicio");
 
                     b.Property<PeriodStatus>("Status")
-                        .HasColumnType("period_status")
-                        .HasColumnName("period_status");
+                        .HasColumnType("estado_periodo")
+                        .HasColumnName("estado");
 
                     b.HasKey("Id");
 
@@ -196,7 +196,7 @@ namespace Accounting.Persistence.Migrations
 
                     b.HasIndex("CompanyId", "StartDate", "EndDate");
 
-                    b.ToTable("accounting_periods", (string)null);
+                    b.ToTable("periodos_contables", (string)null);
                 });
 
             modelBuilder.Entity("Accounting.Domain.CostCenter", b =>
@@ -212,26 +212,26 @@ namespace Accounting.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
-                        .HasColumnName("code");
+                        .HasColumnName("codigo");
 
                     b.Property<long>("CompanyId")
                         .HasColumnType("bigint")
-                        .HasColumnName("company_id");
+                        .HasColumnName("empresa_id");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
-                        .HasColumnName("is_active");
+                        .HasColumnName("activo");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
-                        .HasColumnName("name");
+                        .HasColumnName("nombre");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("public_id")
+                        .HasColumnName("id_publico")
                         .HasDefaultValueSql("uuidv7()");
 
                     b.HasKey("Id");
@@ -242,7 +242,7 @@ namespace Accounting.Persistence.Migrations
                     b.HasIndex("CompanyId", "Code")
                         .IsUnique();
 
-                    b.ToTable("cost_centers", (string)null);
+                    b.ToTable("centros_costo", (string)null);
                 });
 
             modelBuilder.Entity("Accounting.Domain.Currency", b =>
@@ -258,28 +258,28 @@ namespace Accounting.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .HasColumnType("character varying(3)")
-                        .HasColumnName("code");
+                        .HasColumnName("codigo");
 
                     b.Property<int>("DecimalPlaces")
                         .HasColumnType("integer")
-                        .HasColumnName("decimal_places");
+                        .HasColumnName("decimales");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
-                        .HasColumnName("is_active");
+                        .HasColumnName("activo");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("name");
+                        .HasColumnName("nombre");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("currencies", (string)null);
+                    b.ToTable("monedas", (string)null);
                 });
 
             modelBuilder.Entity("Accounting.Domain.ExchangeRate", b =>
@@ -293,25 +293,25 @@ namespace Accounting.Persistence.Migrations
 
                     b.Property<DateOnly>("EffectiveDate")
                         .HasColumnType("date")
-                        .HasColumnName("effective_date");
+                        .HasColumnName("fecha_vigencia");
 
                     b.Property<long>("FromCurrencyId")
                         .HasColumnType("bigint")
-                        .HasColumnName("from_currency_id");
+                        .HasColumnName("moneda_origen_id");
 
                     b.Property<decimal>("Rate")
                         .HasColumnType("numeric(18,8)")
-                        .HasColumnName("rate");
+                        .HasColumnName("tasa");
 
                     b.Property<string>("Source")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("source");
+                        .HasColumnName("fuente");
 
                     b.Property<long>("ToCurrencyId")
                         .HasColumnType("bigint")
-                        .HasColumnName("to_currency_id");
+                        .HasColumnName("moneda_destino_id");
 
                     b.HasKey("Id");
 
@@ -319,9 +319,9 @@ namespace Accounting.Persistence.Migrations
 
                     b.HasIndex("FromCurrencyId", "ToCurrencyId", "EffectiveDate")
                         .IsUnique()
-                        .HasDatabaseName("ix_exchange_rates_pair_date");
+                        .HasDatabaseName("ix_tipos_cambio_par_fecha");
 
-                    b.ToTable("exchange_rates", (string)null);
+                    b.ToTable("tipos_cambio", (string)null);
                 });
 
             modelBuilder.Entity("Accounting.Domain.JournalEntry", b =>
@@ -335,62 +335,62 @@ namespace Accounting.Persistence.Migrations
 
                     b.Property<long>("AccountingPeriodId")
                         .HasColumnType("bigint")
-                        .HasColumnName("accounting_period_id");
+                        .HasColumnName("periodo_contable_id");
 
                     b.Property<long>("CompanyId")
                         .HasColumnType("bigint")
-                        .HasColumnName("company_id");
+                        .HasColumnName("empresa_id");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
-                        .HasColumnName("description");
+                        .HasColumnName("descripcion");
 
                     b.Property<DateOnly>("EntryDate")
                         .HasColumnType("date")
-                        .HasColumnName("entry_date");
+                        .HasColumnName("fecha_asiento");
 
                     b.Property<DateTimeOffset?>("PostedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("posted_at");
+                        .HasColumnName("contabilizado_en");
 
                     b.Property<string>("PostedBy")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("posted_by");
+                        .HasColumnName("contabilizado_por");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("public_id")
+                        .HasColumnName("id_publico")
                         .HasDefaultValueSql("uuidv7()");
 
                     b.Property<long?>("ReversalOfEntryId")
                         .HasColumnType("bigint")
-                        .HasColumnName("reversal_of_entry_id");
+                        .HasColumnName("asiento_revertido_id");
 
                     b.Property<long?>("SequenceNumber")
                         .HasColumnType("bigint")
-                        .HasColumnName("sequence_number");
+                        .HasColumnName("numero_secuencia");
 
                     b.Property<string>("SourceModule")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("source_module");
+                        .HasColumnName("modulo_origen");
 
                     b.Property<string>("SourceReference")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("source_reference");
+                        .HasColumnName("referencia_origen");
 
                     b.Property<JournalEntryStatus>("Status")
-                        .HasColumnType("journal_entry_status")
-                        .HasColumnName("journal_entry_status");
+                        .HasColumnType("estado_asiento")
+                        .HasColumnName("estado");
 
                     b.Property<long>("VoucherTypeId")
                         .HasColumnType("bigint")
-                        .HasColumnName("voucher_type_id");
+                        .HasColumnName("tipo_comprobante_id");
 
                     b.HasKey("Id");
 
@@ -404,18 +404,18 @@ namespace Accounting.Persistence.Migrations
                     b.HasIndex("VoucherTypeId");
 
                     b.HasIndex("CompanyId", "AccountingPeriodId", "Status")
-                        .HasDatabaseName("ix_journal_entries_company_period_status");
+                        .HasDatabaseName("ix_asientos_contables_empresa_periodo_estado");
 
                     b.HasIndex("CompanyId", "SourceModule", "SourceReference")
                         .IsUnique()
-                        .HasDatabaseName("ix_journal_entries_idempotency_source")
-                        .HasFilter("source_reference IS NOT NULL");
+                        .HasDatabaseName("ix_asientos_contables_idempotencia_origen")
+                        .HasFilter("referencia_origen IS NOT NULL");
 
                     b.HasIndex("CompanyId", "VoucherTypeId", "SequenceNumber")
                         .IsUnique()
-                        .HasDatabaseName("ix_journal_entries_company_voucher_sequence");
+                        .HasDatabaseName("ix_asientos_contables_empresa_comprobante_secuencia");
 
-                    b.ToTable("journal_entries", (string)null);
+                    b.ToTable("asientos_contables", (string)null);
                 });
 
             modelBuilder.Entity("Accounting.Domain.JournalEntryLine", b =>
@@ -429,40 +429,40 @@ namespace Accounting.Persistence.Migrations
 
                     b.Property<long>("AccountId")
                         .HasColumnType("bigint")
-                        .HasColumnName("account_id");
+                        .HasColumnName("cuenta_id");
 
                     b.Property<long?>("CostCenterId")
                         .HasColumnType("bigint")
-                        .HasColumnName("cost_center_id");
+                        .HasColumnName("centro_costo_id");
 
                     b.Property<decimal>("CreditAmount")
                         .HasColumnType("numeric(18,2)")
-                        .HasColumnName("credit_amount");
+                        .HasColumnName("monto_credito");
 
                     b.Property<long>("CurrencyId")
                         .HasColumnType("bigint")
-                        .HasColumnName("currency_id");
+                        .HasColumnName("moneda_id");
 
                     b.Property<decimal>("DebitAmount")
                         .HasColumnType("numeric(18,2)")
-                        .HasColumnName("debit_amount");
+                        .HasColumnName("monto_debito");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
-                        .HasColumnName("description");
+                        .HasColumnName("descripcion");
 
                     b.Property<long>("JournalEntryId")
                         .HasColumnType("bigint")
-                        .HasColumnName("journal_entry_id");
+                        .HasColumnName("asiento_contable_id");
 
                     b.Property<int>("LineNumber")
                         .HasColumnType("integer")
-                        .HasColumnName("line_number");
+                        .HasColumnName("numero_linea");
 
                     b.Property<long?>("PartyId")
                         .HasColumnType("bigint")
-                        .HasColumnName("party_id");
+                        .HasColumnName("tercero_id");
 
                     b.HasKey("Id");
 
@@ -477,9 +477,9 @@ namespace Accounting.Persistence.Migrations
                     b.HasIndex("JournalEntryId", "LineNumber")
                         .IsUnique();
 
-                    b.ToTable("journal_entry_lines", null, t =>
+                    b.ToTable("lineas_asiento", null, t =>
                         {
-                            t.HasCheckConstraint("ck_journal_entry_lines_debit_xor_credit", "(debit_amount > 0 AND credit_amount = 0) OR (debit_amount = 0 AND credit_amount > 0)");
+                            t.HasCheckConstraint("ck_lineas_asiento_debito_xor_credito", "(monto_debito > 0 AND monto_credito = 0) OR (monto_debito = 0 AND monto_credito > 0)");
                         });
                 });
 
@@ -494,23 +494,23 @@ namespace Accounting.Persistence.Migrations
 
                     b.Property<long>("AccountId")
                         .HasColumnType("bigint")
-                        .HasColumnName("account_id");
+                        .HasColumnName("cuenta_id");
 
                     b.Property<long>("AccountingPeriodId")
                         .HasColumnType("bigint")
-                        .HasColumnName("accounting_period_id");
+                        .HasColumnName("periodo_contable_id");
 
                     b.Property<decimal>("CreditAmount")
                         .HasColumnType("numeric(18,2)")
-                        .HasColumnName("credit_amount");
+                        .HasColumnName("monto_credito");
 
                     b.Property<long>("CurrencyId")
                         .HasColumnType("bigint")
-                        .HasColumnName("currency_id");
+                        .HasColumnName("moneda_id");
 
                     b.Property<decimal>("DebitAmount")
                         .HasColumnType("numeric(18,2)")
-                        .HasColumnName("debit_amount");
+                        .HasColumnName("monto_debito");
 
                     b.HasKey("Id");
 
@@ -521,9 +521,9 @@ namespace Accounting.Persistence.Migrations
                     b.HasIndex("AccountingPeriodId", "AccountId")
                         .IsUnique();
 
-                    b.ToTable("opening_balances", null, t =>
+                    b.ToTable("saldos_iniciales", null, t =>
                         {
-                            t.HasCheckConstraint("ck_opening_balances_debit_xor_credit", "(debit_amount > 0 AND credit_amount = 0) OR (debit_amount = 0 AND credit_amount > 0)");
+                            t.HasCheckConstraint("ck_saldos_iniciales_debito_xor_credito", "(monto_debito > 0 AND monto_credito = 0) OR (monto_debito = 0 AND monto_credito > 0)");
                         });
                 });
 
@@ -540,26 +540,26 @@ namespace Accounting.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
-                        .HasColumnName("code");
+                        .HasColumnName("codigo");
 
                     b.Property<long>("CompanyId")
                         .HasColumnType("bigint")
-                        .HasColumnName("company_id");
+                        .HasColumnName("empresa_id");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
-                        .HasColumnName("is_active");
+                        .HasColumnName("activo");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
-                        .HasColumnName("name");
+                        .HasColumnName("nombre");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("public_id")
+                        .HasColumnName("id_publico")
                         .HasDefaultValueSql("uuidv7()");
 
                     b.HasKey("Id");
@@ -570,7 +570,7 @@ namespace Accounting.Persistence.Migrations
                     b.HasIndex("CompanyId", "Code")
                         .IsUnique();
 
-                    b.ToTable("parties", (string)null);
+                    b.ToTable("terceros", (string)null);
                 });
 
             modelBuilder.Entity("Accounting.Domain.PeriodReopenRequest", b =>
@@ -584,53 +584,53 @@ namespace Accounting.Persistence.Migrations
 
                     b.Property<long>("AccountingPeriodId")
                         .HasColumnType("bigint")
-                        .HasColumnName("accounting_period_id");
+                        .HasColumnName("periodo_contable_id");
 
                     b.Property<long>("CompanyId")
                         .HasColumnType("bigint")
-                        .HasColumnName("company_id");
+                        .HasColumnName("empresa_id");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("public_id")
+                        .HasColumnName("id_publico")
                         .HasDefaultValueSql("uuidv7()");
 
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
-                        .HasColumnName("reason");
+                        .HasColumnName("motivo");
 
                     b.Property<DateTimeOffset>("RequestedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("requested_at");
+                        .HasColumnName("solicitado_en");
 
                     b.Property<string>("RequestedBy")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("requested_by");
+                        .HasColumnName("solicitado_por");
 
                     b.Property<string>("ResolutionNotes")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
-                        .HasColumnName("resolution_notes");
+                        .HasColumnName("notas_resolucion");
 
                     b.Property<DateTimeOffset?>("ResolvedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("resolved_at");
+                        .HasColumnName("resuelto_en");
 
                     b.Property<string>("ResolvedBy")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("resolved_by");
+                        .HasColumnName("resuelto_por");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
-                        .HasColumnName("status");
+                        .HasColumnName("estado");
 
                     b.HasKey("Id");
 
@@ -640,9 +640,9 @@ namespace Accounting.Persistence.Migrations
                         .IsUnique();
 
                     b.HasIndex("CompanyId", "AccountingPeriodId", "Status")
-                        .HasDatabaseName("ix_period_reopen_requests_company_period_status");
+                        .HasDatabaseName("ix_solicitudes_reapertura_periodo_empresa_periodo_estado");
 
-                    b.ToTable("period_reopen_requests", (string)null);
+                    b.ToTable("solicitudes_reapertura_periodo", (string)null);
                 });
 
             modelBuilder.Entity("Accounting.Domain.VoucherType", b =>
@@ -658,32 +658,32 @@ namespace Accounting.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
-                        .HasColumnName("code");
+                        .HasColumnName("codigo");
 
                     b.Property<long>("CompanyId")
                         .HasColumnType("bigint")
-                        .HasColumnName("company_id");
+                        .HasColumnName("empresa_id");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
-                        .HasColumnName("is_active");
+                        .HasColumnName("activo");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
-                        .HasColumnName("name");
+                        .HasColumnName("nombre");
 
                     b.Property<string>("NumberingMode")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
-                        .HasColumnName("numbering_mode");
+                        .HasColumnName("modo_numeracion");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("public_id")
+                        .HasColumnName("id_publico")
                         .HasDefaultValueSql("uuidv7()");
 
                     b.HasKey("Id");
@@ -694,7 +694,7 @@ namespace Accounting.Persistence.Migrations
                     b.HasIndex("CompanyId", "Code")
                         .IsUnique();
 
-                    b.ToTable("voucher_types", (string)null);
+                    b.ToTable("tipos_comprobante", (string)null);
                 });
 
             modelBuilder.Entity("Accounting.Domain.Account", b =>
@@ -703,7 +703,7 @@ namespace Accounting.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("ParentAccountId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_accounts_parent_account");
+                        .HasConstraintName("fk_cuentas_cuenta_padre");
                 });
 
             modelBuilder.Entity("Accounting.Domain.AccountBalanceSnapshot", b =>
@@ -713,14 +713,14 @@ namespace Accounting.Persistence.Migrations
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_account_balance_snapshots_account");
+                        .HasConstraintName("fk_saldos_cuenta_cuenta");
 
                     b.HasOne("Accounting.Domain.AccountingPeriod", null)
                         .WithMany()
                         .HasForeignKey("AccountingPeriodId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_account_balance_snapshots_accounting_period");
+                        .HasConstraintName("fk_saldos_cuenta_periodo_contable");
                 });
 
             modelBuilder.Entity("Accounting.Domain.ExchangeRate", b =>
@@ -730,14 +730,14 @@ namespace Accounting.Persistence.Migrations
                         .HasForeignKey("FromCurrencyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_exchange_rates_from_currency");
+                        .HasConstraintName("fk_tipos_cambio_moneda_origen");
 
                     b.HasOne("Accounting.Domain.Currency", null)
                         .WithMany()
                         .HasForeignKey("ToCurrencyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_exchange_rates_to_currency");
+                        .HasConstraintName("fk_tipos_cambio_moneda_destino");
                 });
 
             modelBuilder.Entity("Accounting.Domain.JournalEntry", b =>
@@ -747,20 +747,20 @@ namespace Accounting.Persistence.Migrations
                         .HasForeignKey("AccountingPeriodId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_journal_entries_accounting_period");
+                        .HasConstraintName("fk_asientos_contables_periodo_contable");
 
                     b.HasOne("Accounting.Domain.JournalEntry", null)
                         .WithMany()
                         .HasForeignKey("ReversalOfEntryId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_journal_entries_reversal_of_entry");
+                        .HasConstraintName("fk_asientos_contables_asiento_revertido");
 
                     b.HasOne("Accounting.Domain.VoucherType", null)
                         .WithMany()
                         .HasForeignKey("VoucherTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_journal_entries_voucher_type");
+                        .HasConstraintName("fk_asientos_contables_tipo_comprobante");
                 });
 
             modelBuilder.Entity("Accounting.Domain.JournalEntryLine", b =>
@@ -770,33 +770,33 @@ namespace Accounting.Persistence.Migrations
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_journal_entry_lines_account");
+                        .HasConstraintName("fk_lineas_asiento_cuenta");
 
                     b.HasOne("Accounting.Domain.CostCenter", null)
                         .WithMany()
                         .HasForeignKey("CostCenterId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_journal_entry_lines_cost_center");
+                        .HasConstraintName("fk_lineas_asiento_centro_costo");
 
                     b.HasOne("Accounting.Domain.Currency", null)
                         .WithMany()
                         .HasForeignKey("CurrencyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_journal_entry_lines_currency");
+                        .HasConstraintName("fk_lineas_asiento_moneda");
 
                     b.HasOne("Accounting.Domain.JournalEntry", null)
                         .WithMany("Lines")
                         .HasForeignKey("JournalEntryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_journal_entry_lines_journal_entry");
+                        .HasConstraintName("fk_lineas_asiento_asiento_contable");
 
                     b.HasOne("Accounting.Domain.Party", null)
                         .WithMany()
                         .HasForeignKey("PartyId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_journal_entry_lines_party");
+                        .HasConstraintName("fk_lineas_asiento_tercero");
                 });
 
             modelBuilder.Entity("Accounting.Domain.OpeningBalance", b =>
@@ -806,21 +806,21 @@ namespace Accounting.Persistence.Migrations
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_opening_balances_account");
+                        .HasConstraintName("fk_saldos_iniciales_cuenta");
 
                     b.HasOne("Accounting.Domain.AccountingPeriod", null)
                         .WithMany()
                         .HasForeignKey("AccountingPeriodId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_opening_balances_accounting_period");
+                        .HasConstraintName("fk_saldos_iniciales_periodo_contable");
 
                     b.HasOne("Accounting.Domain.Currency", null)
                         .WithMany()
                         .HasForeignKey("CurrencyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_opening_balances_currency");
+                        .HasConstraintName("fk_saldos_iniciales_moneda");
                 });
 
             modelBuilder.Entity("Accounting.Domain.PeriodReopenRequest", b =>
@@ -830,7 +830,7 @@ namespace Accounting.Persistence.Migrations
                         .HasForeignKey("AccountingPeriodId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_period_reopen_requests_accounting_period");
+                        .HasConstraintName("fk_solicitudes_reapertura_periodo_periodo_contable");
                 });
 
             modelBuilder.Entity("Accounting.Domain.JournalEntry", b =>

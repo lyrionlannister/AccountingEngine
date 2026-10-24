@@ -31,13 +31,13 @@ public sealed class AppDbContextMigrationTests : IAsyncLifetime
     }
 
     [Theory]
-    [InlineData("accounts")]
-    [InlineData("cost_centers")]
-    [InlineData("parties")]
-    [InlineData("voucher_types")]
-    [InlineData("accounting_periods")]
-    [InlineData("journal_entries")]
-    [InlineData("period_reopen_requests")]
+    [InlineData("cuentas")]
+    [InlineData("centros_costo")]
+    [InlineData("terceros")]
+    [InlineData("tipos_comprobante")]
+    [InlineData("periodos_contables")]
+    [InlineData("asientos_contables")]
+    [InlineData("solicitudes_reapertura_periodo")]
     public async Task Migrate_CreatesUniqueConstraintOnPublicId(string table)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -47,9 +47,9 @@ public sealed class AppDbContextMigrationTests : IAsyncLifetime
         await using var context = new AppDbContext(options);
         await context.Database.MigrateAsync();
 
-        var isUnique = await IsColumnUniqueAsync(context, table, "public_id");
+        var isUnique = await IsColumnUniqueAsync(context, table, "id_publico");
 
-        Assert.True(isUnique, $"Expected a unique constraint on {table}.public_id.");
+        Assert.True(isUnique, $"Expected a unique constraint on {table}.id_publico.");
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public sealed class AppDbContextMigrationTests : IAsyncLifetime
             SELECT 1
             FROM pg_index i
             JOIN pg_class c ON c.oid = i.indexrelid
-            WHERE c.relname = 'ix_journal_entries_idempotency_source'
+            WHERE c.relname = 'ix_asientos_contables_idempotencia_origen'
               AND i.indisunique;
             """;
         var result = await command.ExecuteScalarAsync();
@@ -95,7 +95,7 @@ public sealed class AppDbContextMigrationTests : IAsyncLifetime
         command.CommandText = """
             SELECT 1
             FROM pg_constraint
-            WHERE conname = 'ck_journal_entry_lines_debit_xor_credit'
+            WHERE conname = 'ck_lineas_asiento_debito_xor_credito'
               AND contype = 'c';
             """;
         var result = await command.ExecuteScalarAsync();

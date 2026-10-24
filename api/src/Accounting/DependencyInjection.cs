@@ -17,19 +17,19 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Missing connection string 'Default'.");
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
-        dataSourceBuilder.MapEnum<AccountNature>("account_nature");
-        dataSourceBuilder.MapEnum<AccountType>("account_type");
-        dataSourceBuilder.MapEnum<PeriodStatus>("period_status");
-        dataSourceBuilder.MapEnum<JournalEntryStatus>("journal_entry_status");
+        dataSourceBuilder.MapEnum<AccountNature>("naturaleza_cuenta");
+        dataSourceBuilder.MapEnum<AccountType>("tipo_cuenta");
+        dataSourceBuilder.MapEnum<PeriodStatus>("estado_periodo");
+        dataSourceBuilder.MapEnum<JournalEntryStatus>("estado_asiento");
         var dataSource = dataSourceBuilder.Build();
 
         services.AddSingleton(dataSource);
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(dataSource, npgsqlOptions =>
         {
-            npgsqlOptions.MapEnum<AccountNature>("account_nature");
-            npgsqlOptions.MapEnum<AccountType>("account_type");
-            npgsqlOptions.MapEnum<PeriodStatus>("period_status");
-            npgsqlOptions.MapEnum<JournalEntryStatus>("journal_entry_status");
+            npgsqlOptions.MapEnum<AccountNature>("naturaleza_cuenta");
+            npgsqlOptions.MapEnum<AccountType>("tipo_cuenta");
+            npgsqlOptions.MapEnum<PeriodStatus>("estado_periodo");
+            npgsqlOptions.MapEnum<JournalEntryStatus>("estado_asiento");
         }));
 
         services.AddScoped<IJournalEntryRepository, JournalEntryRepository>();

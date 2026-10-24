@@ -22,15 +22,15 @@ public sealed class AccountHierarchyTests : IAsyncLifetime
     public async Task SetParent_ToItself_ThrowsAfterPersistence()
     {
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(_postgres);
-        dataSourceBuilder.MapEnum<AccountNature>("account_nature");
-        dataSourceBuilder.MapEnum<AccountType>("account_type");
+        dataSourceBuilder.MapEnum<AccountNature>("naturaleza_cuenta");
+        dataSourceBuilder.MapEnum<AccountType>("tipo_cuenta");
         await using var dataSource = dataSourceBuilder.Build();
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(dataSource, npgsqlOptions =>
             {
-                npgsqlOptions.MapEnum<AccountNature>("account_nature");
-                npgsqlOptions.MapEnum<AccountType>("account_type");
+                npgsqlOptions.MapEnum<AccountNature>("naturaleza_cuenta");
+                npgsqlOptions.MapEnum<AccountType>("tipo_cuenta");
             })
             .Options;
 

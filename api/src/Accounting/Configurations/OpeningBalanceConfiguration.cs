@@ -8,36 +8,36 @@ public sealed class OpeningBalanceConfiguration : IEntityTypeConfiguration<Openi
 {
     public void Configure(EntityTypeBuilder<OpeningBalance> builder)
     {
-        builder.ToTable("opening_balances", t =>
+        builder.ToTable("saldos_iniciales", t =>
             t.HasCheckConstraint(
-                "ck_opening_balances_debit_xor_credit",
-                "(debit_amount > 0 AND credit_amount = 0) OR (debit_amount = 0 AND credit_amount > 0)"));
+                "ck_saldos_iniciales_debito_xor_credito",
+                "(monto_debito > 0 AND monto_credito = 0) OR (monto_debito = 0 AND monto_credito > 0)"));
 
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).HasColumnName("id").UseIdentityAlwaysColumn();
 
-        builder.Property(e => e.AccountingPeriodId).HasColumnName("accounting_period_id").IsRequired();
-        builder.Property(e => e.AccountId).HasColumnName("account_id").IsRequired();
-        builder.Property(e => e.CurrencyId).HasColumnName("currency_id").IsRequired();
-        builder.Property(e => e.DebitAmount).HasColumnName("debit_amount").HasColumnType("numeric(18,2)").IsRequired();
-        builder.Property(e => e.CreditAmount).HasColumnName("credit_amount").HasColumnType("numeric(18,2)").IsRequired();
+        builder.Property(e => e.AccountingPeriodId).HasColumnName("periodo_contable_id").IsRequired();
+        builder.Property(e => e.AccountId).HasColumnName("cuenta_id").IsRequired();
+        builder.Property(e => e.CurrencyId).HasColumnName("moneda_id").IsRequired();
+        builder.Property(e => e.DebitAmount).HasColumnName("monto_debito").HasColumnType("numeric(18,2)").IsRequired();
+        builder.Property(e => e.CreditAmount).HasColumnName("monto_credito").HasColumnType("numeric(18,2)").IsRequired();
 
         builder.HasOne<AccountingPeriod>()
             .WithMany()
             .HasForeignKey(e => e.AccountingPeriodId)
-            .HasConstraintName("fk_opening_balances_accounting_period")
+            .HasConstraintName("fk_saldos_iniciales_periodo_contable")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<Account>()
             .WithMany()
             .HasForeignKey(e => e.AccountId)
-            .HasConstraintName("fk_opening_balances_account")
+            .HasConstraintName("fk_saldos_iniciales_cuenta")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<Currency>()
             .WithMany()
             .HasForeignKey(e => e.CurrencyId)
-            .HasConstraintName("fk_opening_balances_currency")
+            .HasConstraintName("fk_saldos_iniciales_moneda")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(e => new { e.AccountingPeriodId, e.AccountId }).IsUnique();

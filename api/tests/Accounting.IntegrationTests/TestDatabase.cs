@@ -38,17 +38,17 @@ internal sealed class TestDatabase : IAsyncDisposable
 
     private static void MapAdoEnums(NpgsqlDataSourceBuilder builder)
     {
-        builder.MapEnum<AccountNature>("account_nature");
-        builder.MapEnum<AccountType>("account_type");
-        builder.MapEnum<PeriodStatus>("period_status");
-        builder.MapEnum<JournalEntryStatus>("journal_entry_status");
+        builder.MapEnum<AccountNature>("naturaleza_cuenta");
+        builder.MapEnum<AccountType>("tipo_cuenta");
+        builder.MapEnum<PeriodStatus>("estado_periodo");
+        builder.MapEnum<JournalEntryStatus>("estado_asiento");
     }
 
     private static void MapEfEnums(Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.NpgsqlDbContextOptionsBuilder builder)
     {
-        builder.MapEnum<AccountNature>("account_nature");
-        builder.MapEnum<AccountType>("account_type");
-        builder.MapEnum<PeriodStatus>("period_status");
-        builder.MapEnum<JournalEntryStatus>("journal_entry_status");
+        builder.MapEnum<AccountNature>("naturaleza_cuenta");
+        builder.MapEnum<AccountType>("tipo_cuenta");
+        builder.MapEnum<PeriodStatus>("estado_periodo");
+        builder.MapEnum<JournalEntryStatus>("estado_asiento");
     }
 }

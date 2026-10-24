@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\Accounting\Accounting.csproj" />
     <ProjectReference Include="..\..\src\Accounting\Domain\Accounting.Domain.csproj" />
     <ProjectReference Include="..\..\src\Api\Api.csproj" />
+    <ProjectReference Include="..\..\src\Companies\Companies.csproj" />
   </ItemGroup>
 
 </Project>

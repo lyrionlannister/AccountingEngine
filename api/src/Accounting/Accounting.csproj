@@ -3,6 +3,7 @@
   <ItemGroup>
     <Compile Remove="Domain\**" />
     <ProjectReference Include="Domain\Accounting.Domain.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

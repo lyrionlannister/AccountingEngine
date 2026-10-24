@@ -34,7 +34,7 @@ public sealed class AccountHierarchyTests : IAsyncLifetime
             })
             .Options;
 
-        await using var context = new AppDbContext(options);
+        await using var context = new AppDbContext(options, new FixedCurrentCompanyContext(1));
         await context.Database.MigrateAsync();
 
         var account = Account.Create(1, "1000", "Cash", AccountNature.Debit, AccountType.Asset, null, true);

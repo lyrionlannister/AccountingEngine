@@ -22,7 +22,7 @@ public sealed class AppDbContextMigrationTests : IAsyncLifetime
             .UseNpgsql(_postgres)
             .Options;
 
-        await using var context = new AppDbContext(options);
+        await using var context = new AppDbContext(options, new FixedCurrentCompanyContext(1));
 
         await context.Database.MigrateAsync();
 
@@ -44,7 +44,7 @@ public sealed class AppDbContextMigrationTests : IAsyncLifetime
             .UseNpgsql(_postgres)
             .Options;
 
-        await using var context = new AppDbContext(options);
+        await using var context = new AppDbContext(options, new FixedCurrentCompanyContext(1));
         await context.Database.MigrateAsync();
 
         var isUnique = await IsColumnUniqueAsync(context, table, "id_publico");
@@ -59,7 +59,7 @@ public sealed class AppDbContextMigrationTests : IAsyncLifetime
             .UseNpgsql(_postgres)
             .Options;
 
-        await using var context = new AppDbContext(options);
+        await using var context = new AppDbContext(options, new FixedCurrentCompanyContext(1));
         await context.Database.MigrateAsync();
 
         var connection = context.Database.GetDbConnection();
@@ -85,7 +85,7 @@ public sealed class AppDbContextMigrationTests : IAsyncLifetime
             .UseNpgsql(_postgres)
             .Options;
 
-        await using var context = new AppDbContext(options);
+        await using var context = new AppDbContext(options, new FixedCurrentCompanyContext(1));
         await context.Database.MigrateAsync();
 
         var connection = context.Database.GetDbConnection();

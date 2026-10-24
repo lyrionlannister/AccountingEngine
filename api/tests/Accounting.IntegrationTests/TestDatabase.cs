@@ -25,13 +25,13 @@ internal sealed class TestDatabase : IAsyncDisposable
         return database;
     }
 
-    public AppDbContext NewContext()
+    public AppDbContext NewContext(long companyId = 1)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(_dataSource, MapEfEnums)
             .Options;
 
-        return new AppDbContext(options);
+        return new AppDbContext(options, new FixedCurrentCompanyContext(companyId));
     }
 
     public async ValueTask DisposeAsync() => await _dataSource.DisposeAsync();

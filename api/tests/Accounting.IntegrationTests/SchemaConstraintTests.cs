@@ -22,7 +22,7 @@ public sealed class SchemaConstraintTests : IAsyncLifetime
             .UseNpgsql(_postgres)
             .Options;
 
-        var context = new AppDbContext(options);
+        var context = new AppDbContext(options, new FixedCurrentCompanyContext(1));
         await context.Database.MigrateAsync();
         return context;
     }

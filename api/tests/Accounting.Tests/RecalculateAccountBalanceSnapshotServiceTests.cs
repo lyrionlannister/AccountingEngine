@@ -36,7 +36,7 @@ public class RecalculateAccountBalanceSnapshotServiceTests
     {
         var periods = PeriodsWithOnePeriod();
         var snapshots = new FakeAccountBalanceSnapshotRepository { NextSum = (100m, 100m) };
-        var existing = AccountBalanceSnapshot.Create(0, 5, 50m, 50m, DateTimeOffset.UtcNow.AddDays(-1));
+        var existing = AccountBalanceSnapshot.Create(CompanyId, 0, 5, 50m, 50m, DateTimeOffset.UtcNow.AddDays(-1));
         snapshots.Snapshots.Add(existing);
 
         var service = new RecalculateAccountBalanceSnapshotService(periods, snapshots);

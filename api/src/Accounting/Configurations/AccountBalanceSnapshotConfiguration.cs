@@ -13,6 +13,7 @@ public sealed class AccountBalanceSnapshotConfiguration : IEntityTypeConfigurati
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).HasColumnName("id").UseIdentityAlwaysColumn();
 
+        builder.Property(e => e.CompanyId).HasColumnName("empresa_id").IsRequired();
         builder.Property(e => e.AccountingPeriodId).HasColumnName("periodo_contable_id").IsRequired();
         builder.Property(e => e.AccountId).HasColumnName("cuenta_id").IsRequired();
         builder.Property(e => e.DebitTotal).HasColumnName("total_debito").HasColumnType("numeric(18,2)").IsRequired();
@@ -31,6 +32,6 @@ public sealed class AccountBalanceSnapshotConfiguration : IEntityTypeConfigurati
             .HasConstraintName("fk_saldos_cuenta_cuenta")
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(e => new { e.AccountingPeriodId, e.AccountId }).IsUnique();
+        builder.HasIndex(e => new { e.CompanyId, e.AccountingPeriodId, e.AccountId }).IsUnique();
     }
 }

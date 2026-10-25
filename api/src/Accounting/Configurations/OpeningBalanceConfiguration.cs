@@ -16,6 +16,7 @@ public sealed class OpeningBalanceConfiguration : IEntityTypeConfiguration<Openi
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).HasColumnName("id").UseIdentityAlwaysColumn();
 
+        builder.Property(e => e.CompanyId).HasColumnName("empresa_id").IsRequired();
         builder.Property(e => e.AccountingPeriodId).HasColumnName("periodo_contable_id").IsRequired();
         builder.Property(e => e.AccountId).HasColumnName("cuenta_id").IsRequired();
         builder.Property(e => e.CurrencyId).HasColumnName("moneda_id").IsRequired();
@@ -40,6 +41,6 @@ public sealed class OpeningBalanceConfiguration : IEntityTypeConfiguration<Openi
             .HasConstraintName("fk_saldos_iniciales_moneda")
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(e => new { e.AccountingPeriodId, e.AccountId }).IsUnique();
+        builder.HasIndex(e => new { e.CompanyId, e.AccountingPeriodId, e.AccountId }).IsUnique();
     }
 }

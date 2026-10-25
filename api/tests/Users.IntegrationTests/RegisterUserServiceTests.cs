@@ -46,4 +46,36 @@ public sealed class RegisterUserServiceTests : IAsyncLifetime
         var count = await context.Users.CountAsync();
         Assert.Equal(1, count);
     }
+
+    [Fact]
+    public async Task RegisterAsync_TrulyConcurrentWithSameEmail_OnlyOneSucceeds()
+    {
+        // El chequeo previo (ExistsByEmailAsync) no basta bajo concurrencia real — dos
+        // registros en vuelo al mismo tiempo pueden pasarlo ambos. El índice único de
+        // Postgres es el backstop (ver UserRepository.AddAsync).
+        await using var database = await TestDatabase.CreateAsync(_postgres);
+
+        async Task<bool> AttemptAsync()
+        {
+            try
+            {
+                await new RegisterUserService(new UserRepository(database.NewContext()))
+                    .RegisterAsync(new RegisterUserRequest("concurrent@example.com", "s3cret-password"), CancellationToken.None);
+                return true;
+            }
+            catch (DuplicateEmailException)
+            {
+                return false;
+            }
+        }
+
+        var results = await Task.WhenAll(AttemptAsync(), AttemptAsync());
+
+        Assert.Single(results, succeeded => succeeded);
+        Assert.Single(results, succeeded => !succeeded);
+
+        await using var verifyContext = database.NewContext();
+        var count = await verifyContext.Users.CountAsync(u => u.Email == "concurrent@example.com");
+        Assert.Equal(1, count);
+    }
 }

@@ -26,7 +26,7 @@ public sealed class RecalculateAccountBalanceSnapshotService
         var snapshot = await _snapshots.FindByIdAsync(request.AccountingPeriodId, request.AccountId, cancellationToken);
         if (snapshot is null)
         {
-            snapshot = AccountBalanceSnapshot.Create(request.AccountingPeriodId, request.AccountId, debitTotal, creditTotal, now);
+            snapshot = AccountBalanceSnapshot.Create(request.CompanyId, request.AccountingPeriodId, request.AccountId, debitTotal, creditTotal, now);
             await _snapshots.AddAsync(snapshot, cancellationToken);
         }
         else

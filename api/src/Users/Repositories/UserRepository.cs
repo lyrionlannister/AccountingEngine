@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Users.Domain;
 using Users.Persistence;
 using Users.Services;
@@ -23,6 +24,22 @@ public sealed class UserRepository : IUserRepository
     public async Task AddAsync(User user, CancellationToken cancellationToken)
     {
         _context.Users.Add(user);
-        await _context.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException
+        {
+            SqlState: PostgresErrorCodes.UniqueViolation,
+            ConstraintName: "ix_usuarios_correo_normalizado"
+        })
+        {
+            // El chequeo previo (ExistsByEmailAsync en RegisterUserService) no basta bajo
+            // concurrencia: dos registros con el mismo email pueden pasarlo ambos antes de que
+            // cualquiera inserte. El índice único es el backstop real (mismo patrón que
+            // JournalEntryRepository con el conflicto de idempotencia).
+            throw new DuplicateEmailException(user.Email);
+        }
     }
 }

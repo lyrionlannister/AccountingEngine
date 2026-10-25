@@ -45,6 +45,9 @@ public sealed class JournalEntryRepository : IJournalEntryRepository
 
         await LockAndRequirePeriodOpenAsync(entry.CompanyId, entry.AccountingPeriodId, cancellationToken);
 
+        // SQL crudo a propósito (bypassa el query filter global de LINQ): se necesita el lock
+        // de fila FOR UPDATE, que LINQ no expresa. Re-filtra empresa_id a mano para no perder
+        // el aislamiento que el query filter habría dado.
         await _context.VoucherTypes
             .FromSqlInterpolated($"SELECT * FROM tipos_comprobante WHERE id = {entry.VoucherTypeId} AND empresa_id = {entry.CompanyId} FOR UPDATE")
             .SingleOrDefaultAsync(cancellationToken);
@@ -87,6 +90,8 @@ public sealed class JournalEntryRepository : IJournalEntryRepository
 
     private async Task LockAndRequirePeriodOpenAsync(long companyId, long accountingPeriodId, CancellationToken cancellationToken)
     {
+        // SQL crudo a propósito, mismo motivo que arriba: FOR UPDATE serializa el posteo contra
+        // un cierre de período concurrente, y LINQ no tiene forma de pedir ese lock de fila.
         var period = await _context.AccountingPeriods
             .FromSqlInterpolated($"SELECT * FROM periodos_contables WHERE id = {accountingPeriodId} AND empresa_id = {companyId} FOR UPDATE")
             .SingleOrDefaultAsync(cancellationToken)

@@ -3,6 +3,7 @@ namespace Accounting.Domain;
 public sealed class OpeningBalance
 {
     public long Id { get; private set; }
+    public long CompanyId { get; private set; }
     public long AccountingPeriodId { get; private set; }
     public long AccountId { get; private set; }
     public long CurrencyId { get; private set; }
@@ -13,7 +14,7 @@ public sealed class OpeningBalance
     {
     }
 
-    public static OpeningBalance Create(long accountingPeriodId, long accountId, long currencyId, decimal debitAmount, decimal creditAmount)
+    public static OpeningBalance Create(long companyId, long accountingPeriodId, long accountId, long currencyId, decimal debitAmount, decimal creditAmount)
     {
         if (debitAmount < 0 || creditAmount < 0)
             throw new ArgumentException("Amounts cannot be negative.");
@@ -22,6 +23,7 @@ public sealed class OpeningBalance
 
         return new OpeningBalance
         {
+            CompanyId = companyId,
             AccountingPeriodId = accountingPeriodId,
             AccountId = accountId,
             CurrencyId = currencyId,

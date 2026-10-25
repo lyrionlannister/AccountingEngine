@@ -12,9 +12,16 @@ namespace Auth.Repositories;
 // "session:" — prepara el terreno para que Reportes (Fase 5) use la misma instancia de Redis.
 public sealed class RedisSessionExpiryListener : BackgroundService
 {
+    // Cota de handlers concurrentes: el callback de SubscribeAsync no espera a que termine
+    // cada HandleExpiredKeyAsync, así que un evento de expiración masiva (p. ej. un restart de
+    // Redis que expira miles de keys casi simultáneas) podía abrir un scope de DI y una
+    // notificación por cada una sin ningún límite.
+    private const int MaxConcurrentNotifications = 50;
+
     private readonly IConnectionMultiplexer _connection;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<RedisSessionExpiryListener> _logger;
+    private readonly SemaphoreSlim _concurrencyLimiter = new(MaxConcurrentNotifications);
 
     public RedisSessionExpiryListener(
         IConnectionMultiplexer connection, IServiceScopeFactory scopeFactory, ILogger<RedisSessionExpiryListener> logger)
@@ -28,7 +35,7 @@ public sealed class RedisSessionExpiryListener : BackgroundService
     {
         var subscriber = _connection.GetSubscriber();
         await subscriber.SubscribeAsync(RedisChannel.Literal("__keyevent@0__:expired"), (channel, value) =>
-            HandleExpiredKeyAsync(value.ToString(), stoppingToken));
+            HandleExpiredKeyBoundedAsync(value.ToString(), stoppingToken));
 
         try
         {
@@ -37,6 +44,19 @@ public sealed class RedisSessionExpiryListener : BackgroundService
         catch (OperationCanceledException)
         {
             // Apagado normal del host.
+        }
+    }
+
+    private async Task HandleExpiredKeyBoundedAsync(string key, CancellationToken cancellationToken)
+    {
+        await _concurrencyLimiter.WaitAsync(cancellationToken);
+        try
+        {
+            await HandleExpiredKeyAsync(key, cancellationToken);
+        }
+        finally
+        {
+            _concurrencyLimiter.Release();
         }
     }
 

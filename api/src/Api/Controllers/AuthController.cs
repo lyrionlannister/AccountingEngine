@@ -49,8 +49,12 @@ public sealed class AuthController : ControllerBase
                 detail: "Demasiados intentos de inicio de sesión para esta cuenta. Intenta de nuevo más tarde.");
 
         // Corregida por ForwardedHeadersMiddleware (ver Program.cs) — nunca la IP interna de nginx.
-        var ip = HttpContext.Connection.RemoteIpAddress?.ToString()
+        var remoteIp = HttpContext.Connection.RemoteIpAddress
             ?? throw new InvalidOperationException("Request has no RemoteIpAddress.");
+        // Un socket dual-stack puede representar el mismo cliente IPv4 como "::ffff:a.b.c.d" en
+        // vez de "a.b.c.d" según configuración — sin normalizar, la regla de 1 IP vería al mismo
+        // cliente como dos IPs distintas entre un request y otro.
+        var ip = (remoteIp.IsIPv4MappedToIPv6 ? remoteIp.MapToIPv4() : remoteIp).ToString();
 
         var result = await _login.LoginAsync(new LoginRequest(body.Email, body.Password, ip), cancellationToken);
         var accessToken = _tokens.IssueAccessToken(result.UserId, result.SessionId);

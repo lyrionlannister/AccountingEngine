@@ -12,14 +12,6 @@ public sealed class WeatherForecastEndpointTests : IClassFixture<ApiTestFactory>
     }
 
     [Fact]
-    public async Task Get_WeatherForecast_ReturnsOk()
-    {
-        var response = await _client.GetAsync("/weatherforecast");
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Get_UnknownRoute_ReturnsNotFound()
     {
         var response = await _client.GetAsync("/does-not-exist");

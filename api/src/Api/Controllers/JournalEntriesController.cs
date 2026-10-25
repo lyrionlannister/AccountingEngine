@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Accounting.DTOs;
@@ -10,6 +11,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Authorize]
+[Tags("Journal Entries")]
 [Route("api/companies/{companyPublicId:guid}/journal-entries")]
 public sealed class JournalEntriesController(
     ICurrentCompanyContext currentCompany,
@@ -27,7 +29,7 @@ public sealed class JournalEntriesController(
         Guid AccountPublicId,
         Guid? CostCenterPublicId,
         Guid? PartyPublicId,
-        string CurrencyCode,
+        [Required(ErrorMessage = "El código de moneda es obligatorio.")] string CurrencyCode,
         decimal DebitAmount,
         decimal CreditAmount,
         string? Description = null);
@@ -36,13 +38,17 @@ public sealed class JournalEntriesController(
         Guid VoucherTypePublicId,
         Guid AccountingPeriodPublicId,
         DateOnly EntryDate,
-        string Description,
+        [Required(ErrorMessage = "La descripción es obligatoria.")] string Description,
+        [Required(ErrorMessage = "El asiento debe tener al menos una línea.")]
+        [MinLength(1, ErrorMessage = "El asiento debe tener al menos una línea.")]
         IReadOnlyList<JournalEntryLineBody> Lines,
         string? SourceModule = null,
         string? SourceReference = null,
         long? SequenceNumber = null);
 
-    public sealed record ReverseJournalEntryBody(DateOnly EntryDate, string Description);
+    public sealed record ReverseJournalEntryBody(
+        DateOnly EntryDate,
+        [Required(ErrorMessage = "La descripción es obligatoria.")] string Description);
 
     // Falla de resolución de una referencia del body/ruta a su id interno (PublicId que no existe
     // en la empresa activa) — nunca llega a los Services, se traduce a 404 aquí mismo porque es

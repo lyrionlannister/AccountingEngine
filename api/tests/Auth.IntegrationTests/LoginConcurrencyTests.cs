@@ -70,6 +70,33 @@ public sealed class LoginConcurrencyTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task LoginAsync_TrulyConcurrentFromDifferentIps_ExactlyOneSucceeds()
+    {
+        // A diferencia de la prueba anterior (secuencial: prueba la detección del conflicto,
+        // no la carrera), aquí ambos logins están en vuelo al mismo tiempo — es el escenario
+        // que el check-then-write original dejaba pasar a los dos (ver RedisSessionStore,
+        // ahora atómico vía script Lua, y PostgresSessionFallbackStore, ahora con
+        // pg_advisory_xact_lock).
+        await using var database = await TestDatabase.CreateAsync(_postgres);
+        await RegisterUserAsync(database, "truly-concurrent-diff-ip@acme.test");
+
+        // Cada intento usa su propio LoginService (y por lo tanto su propio DbContext) — un
+        // único DbContext compartido entre dos llamadas concurrentes no es seguro en EF Core
+        // y rompería la prueba por una razón ajena a la carrera que queremos ejercitar.
+        var firstAttempt = BuildLoginService(database).LoginAsync(
+            new LoginRequest("truly-concurrent-diff-ip@acme.test", "s3cret-password", "203.0.113.10"), CancellationToken.None);
+        var secondAttempt = BuildLoginService(database).LoginAsync(
+            new LoginRequest("truly-concurrent-diff-ip@acme.test", "s3cret-password", "198.51.100.20"), CancellationToken.None);
+
+        var results = await Task.WhenAll(
+            firstAttempt.ContinueWith(t => t.IsCompletedSuccessfully, TaskScheduler.Default),
+            secondAttempt.ContinueWith(t => t.IsCompletedSuccessfully, TaskScheduler.Default));
+
+        Assert.Single(results, succeeded => succeeded);
+        Assert.Single(results, succeeded => !succeeded);
+    }
+
+    [Fact]
     public async Task LoginAsync_ConcurrentFromSameIp_BothSucceed()
     {
         await using var database = await TestDatabase.CreateAsync(_postgres);

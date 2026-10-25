@@ -11,7 +11,39 @@ namespace Auth.Repositories;
 // Ningún otro módulo (ni Auth.Services) conoce este esquema.
 public sealed class RedisSessionStore : ISessionStore
 {
-    private static readonly TimeSpan SlidingWindow = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan SlidingWindow = UserSession.SlidingWindow;
+
+    // Chequeo de "1 IP por usuario" + escritura en un único round-trip atómico (EVAL): un
+    // read-then-write en dos pasos separados dejaba una ventana donde dos logins concurrentes
+    // desde IPs distintas podían ambos leer "sin conflicto" antes de que cualquiera escribiera.
+    private const string CreateSessionScript = @"
+local idxKey = KEYS[1]
+local sessionKey = KEYS[2]
+local userId = ARGV[1]
+local ip = ARGV[2]
+local ttlSeconds = ARGV[3]
+local epochSeconds = ARGV[4]
+local sessionId = ARGV[5]
+
+local entries = redis.call('HGETALL', idxKey)
+for i = 1, #entries, 2 do
+    local sid = entries[i]
+    local existingIp = entries[i + 1]
+    local candidateKey = 'session:' .. userId .. ':' .. sid
+    if redis.call('EXISTS', candidateKey) == 1 then
+        if existingIp ~= ip then
+            return { 'conflict', existingIp }
+        end
+    else
+        redis.call('HDEL', idxKey, sid)
+    end
+end
+
+redis.call('HSET', sessionKey, 'ip', ip, 'createdAt', epochSeconds, 'lastSeenAt', epochSeconds)
+redis.call('EXPIRE', sessionKey, ttlSeconds)
+redis.call('HSET', idxKey, sessionId, ip)
+return { 'ok' }
+";
 
     private readonly IConnectionMultiplexer _connection;
 
@@ -20,17 +52,23 @@ public sealed class RedisSessionStore : ISessionStore
     public async Task<UserSession> CreateAsync(long userId, string ip, CancellationToken cancellationToken)
     {
         var db = _connection.GetDatabase();
-        var indexKey = UserSessionsIndexKey(userId);
-
-        var activeIps = await ActiveIpsAsync(db, userId, indexKey);
-        if (activeIps.Count > 0 && activeIps.Any(existingIp => existingIp != ip))
-            throw new SessionConflictException(userId, ip);
-
         var now = DateTimeOffset.UtcNow;
         var session = UserSession.Create(userId, ip, now);
 
-        await WriteSessionAsync(db, session);
-        await db.HashSetAsync(indexKey, session.SessionId.ToString(), ip);
+        var result = (RedisResult[])await db.ScriptEvaluateAsync(
+            CreateSessionScript,
+            keys: [UserSessionsIndexKey(userId), SessionKey(userId, session.SessionId)],
+            values:
+            [
+                userId,
+                ip,
+                (long)SlidingWindow.TotalSeconds,
+                now.ToUnixTimeSeconds(),
+                session.SessionId.ToString()
+            ]);
+
+        if ((string)result[0]! == "conflict")
+            throw new SessionConflictException(userId, ip);
 
         return session;
     }
@@ -88,28 +126,6 @@ public sealed class RedisSessionStore : ISessionStore
         var lastSeenAt = DateTimeOffset.FromUnixTimeSeconds((long)map["lastSeenAt"]);
 
         return UserSession.Reconstitute(sessionId, userId, map["ip"].ToString()!, createdAt, lastSeenAt);
-    }
-
-    // ActiveIpsAsync descarta por lectura (no HEXPIRE, no disponible en StackExchange.Redis
-    // 2.8) cualquier entrada del índice cuya key companion ya no exista — ver Architecture
-    // Decisions en tasks/plan-auth.md.
-    private static async Task<List<string>> ActiveIpsAsync(IDatabase db, long userId, RedisKey indexKey)
-    {
-        var entries = await db.HashGetAllAsync(indexKey);
-        var ips = new List<string>();
-
-        foreach (var entry in entries)
-        {
-            if (!Guid.TryParse(entry.Name.ToString(), out var sessionId))
-                continue;
-
-            if (await db.KeyExistsAsync(SessionKey(userId, sessionId)))
-                ips.Add(entry.Value.ToString());
-            else
-                await db.HashDeleteAsync(indexKey, entry.Name);
-        }
-
-        return ips;
     }
 
     private static string SessionKey(long userId, Guid sessionId) => $"session:{userId}:{sessionId}";

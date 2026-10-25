@@ -40,7 +40,15 @@ public sealed class FailoverSessionStore : ISessionStore
     {
         try
         {
-            return await _primary.FindAsync(userId, sessionId, cancellationToken);
+            var session = await _primary.FindAsync(userId, sessionId, cancellationToken);
+            if (session is not null)
+                return session;
+
+            // Miss limpio en Redis (no excepción): puede ser que la sesión nunca haya existido,
+            // o que se haya creado/tocado durante una caída anterior de Redis y solo viva en el
+            // respaldo. Sin este chequeo, un usuario pierde su sesión en cuanto Redis vuelve a
+            // responder aunque la sesión siga vigente en Postgres.
+            return await _fallback.FindAsync(userId, sessionId, cancellationToken);
         }
         catch (RedisException ex)
         {
@@ -68,7 +76,12 @@ public sealed class FailoverSessionStore : ISessionStore
         try
         {
             await _primary.RevokeAsync(userId, sessionId, cancellationToken);
-            await MirrorBestEffortAsync(() => _fallback.RevokeAsync(userId, sessionId, cancellationToken));
+            // La revocación nunca es best-effort: una fila "revocada" que queda viva en el
+            // respaldo puede resucitar una sesión cerrada si Redis cae después (ver
+            // code-reviewer/security-auditor). Create/Touch sí siguen best-effort — FindAsync
+            // ahora consulta el respaldo en cualquier miss limpio de Redis, así que un mirror
+            // de creación perdido ya no implica perder la sesión mientras Redis siga arriba.
+            await MirrorWithRetryAsync(() => _fallback.RevokeAsync(userId, sessionId, cancellationToken));
         }
         catch (RedisException ex)
         {
@@ -85,9 +98,36 @@ public sealed class FailoverSessionStore : ISessionStore
         }
         catch (Exception ex)
         {
-            // El respaldo puede quedar unos segundos desincronizado — aceptable, solo se lee
-            // cuando Redis ya no responde (ver tasks/plan-auth.md).
+            // El respaldo puede quedar unos segundos desincronizado — aceptable para
+            // Create/Touch: FindAsync ya cae al respaldo en cualquier miss limpio de Redis.
             _logger.LogWarning(ex, "Failed to mirror session write to the Postgres fallback store.");
+        }
+    }
+
+    private async Task MirrorWithRetryAsync(Func<Task> mirror)
+    {
+        const int maxAttempts = 3;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                await mirror();
+                return;
+            }
+            catch (Exception ex) when (attempt < maxAttempts)
+            {
+                _logger.LogWarning(ex, "Failed to mirror session revocation to Postgres (attempt {Attempt}/{MaxAttempts}).", attempt, maxAttempts);
+                await Task.Delay(TimeSpan.FromMilliseconds(100 * attempt));
+            }
+            catch (Exception ex)
+            {
+                // Se agotaron los reintentos: la sesión ya está revocada en Redis (la fuente de
+                // verdad mientras responda), pero el respaldo puede seguir marcándola activa.
+                // Error, no Warning: si Redis cae después, esa fila revocada puede aceptar un
+                // JWT que el usuario ya cerró.
+                _logger.LogError(ex, "Failed to mirror session revocation to Postgres after {MaxAttempts} attempts; the fallback row may remain stale.", maxAttempts);
+            }
         }
     }
 

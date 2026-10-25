@@ -17,6 +17,9 @@
   <Folder Name="/src/Companies/Domain/">
     <Project Path="src/Companies/Domain/Companies.Domain.csproj" />
   </Folder>
+  <Folder Name="/src/Users/Domain/">
+    <Project Path="src/Users/Domain/Users.Domain.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Accounting.Tests/Accounting.Tests.csproj" />
     <Project Path="tests/Accounting.ArchTests/Accounting.ArchTests.csproj" />
@@ -26,5 +29,6 @@
     <Project Path="tests/Companies.Tests/Companies.Tests.csproj" />
     <Project Path="tests/Companies.ArchTests/Companies.ArchTests.csproj" />
     <Project Path="tests/Companies.IntegrationTests/Companies.IntegrationTests.csproj" />
+    <Project Path="tests/Users.Tests/Users.Tests.csproj" />
   </Folder>
 </Solution>

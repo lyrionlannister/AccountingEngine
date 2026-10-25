@@ -15,6 +15,9 @@ public sealed class MembershipRepository : IMembershipRepository
         _context.Memberships.FirstOrDefaultAsync(
             m => m.UserId == userId && m.CompanyId == companyId && m.IsActive, cancellationToken);
 
+    public async Task<IReadOnlyList<Membership>> ListActiveByUserAsync(long userId, CancellationToken cancellationToken) =>
+        await _context.Memberships.Where(m => m.UserId == userId && m.IsActive).ToListAsync(cancellationToken);
+
     public async Task AddAsync(Membership membership, CancellationToken cancellationToken)
     {
         _context.Memberships.Add(membership);

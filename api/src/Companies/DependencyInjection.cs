@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<CreateTenantWithFirstCompanyService>();
         services.AddScoped<AddMembershipService>();
         services.AddScoped<GrantPlatformAdministratorService>();
+        services.AddScoped<ListMembershipsForUserService>();
 
         return services;
     }

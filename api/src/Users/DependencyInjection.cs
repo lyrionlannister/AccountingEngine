@@ -18,6 +18,7 @@ public static class DependencyInjection
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<RegisterUserService>();
+        services.AddScoped<FindUserCredentialsService>();
 
         return services;
     }

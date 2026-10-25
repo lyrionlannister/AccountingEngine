@@ -22,6 +22,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Accounting\Accounting.csproj" />
+    <ProjectReference Include="..\..\src\Shared\Shared.csproj" />
+    <ProjectReference Include="..\..\src\Companies\Companies.csproj" />
+    <ProjectReference Include="..\..\src\Companies\Domain\Companies.Domain.csproj" />
   </ItemGroup>
 
 </Project>

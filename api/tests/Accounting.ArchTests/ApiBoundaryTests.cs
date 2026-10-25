@@ -12,7 +12,9 @@ public class ApiBoundaryTests
     {
         var result = Types.InAssembly(ApiAssembly)
             .That().ResideInNamespace("Api")
-            .Should().NotHaveDependencyOnAny("Accounting.Persistence", "Accounting.Repositories", "Accounting.Configurations")
+            .Should().NotHaveDependencyOnAny(
+                "Accounting.Persistence", "Accounting.Repositories", "Accounting.Configurations",
+                "Companies.Persistence", "Companies.Repositories", "Companies.Configurations")
             .GetResult();
 
         Assert.True(result.IsSuccessful, ArchTestResult.Describe(result));

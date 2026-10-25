@@ -41,7 +41,7 @@ public sealed class PostJournalEntryServiceTests : IAsyncLifetime
             })
             .Options;
 
-        await using var context = new AppDbContext(options);
+        await using var context = new AppDbContext(options, new FixedCurrentCompanyContext(1));
         await context.Database.MigrateAsync();
 
         const long companyId = 1;
@@ -111,7 +111,7 @@ public sealed class PostJournalEntryServiceTests : IAsyncLifetime
             })
             .Options;
 
-        await using var context = new AppDbContext(options);
+        await using var context = new AppDbContext(options, new FixedCurrentCompanyContext(1));
         await context.Database.MigrateAsync();
 
         const long companyId = 1;

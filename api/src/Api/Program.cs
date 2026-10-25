@@ -1,8 +1,10 @@
 using Accounting;
+using Companies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddCompaniesModule(builder.Configuration);
 builder.Services.AddAccountingModule(builder.Configuration);
 
 var app = builder.Build();

@@ -122,6 +122,10 @@ namespace Accounting.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("calculado_en");
 
+                    b.Property<long>("CompanyId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("empresa_id");
+
                     b.Property<decimal>("CreditTotal")
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("total_credito");
@@ -134,7 +138,9 @@ namespace Accounting.Persistence.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.HasIndex("AccountingPeriodId", "AccountId")
+                    b.HasIndex("AccountingPeriodId");
+
+                    b.HasIndex("CompanyId", "AccountingPeriodId", "AccountId")
                         .IsUnique();
 
                     b.ToTable("saldos_cuenta", (string)null);
@@ -500,6 +506,10 @@ namespace Accounting.Persistence.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("periodo_contable_id");
 
+                    b.Property<long>("CompanyId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("empresa_id");
+
                     b.Property<decimal>("CreditAmount")
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("monto_credito");
@@ -516,9 +526,11 @@ namespace Accounting.Persistence.Migrations
 
                     b.HasIndex("AccountId");
 
+                    b.HasIndex("AccountingPeriodId");
+
                     b.HasIndex("CurrencyId");
 
-                    b.HasIndex("AccountingPeriodId", "AccountId")
+                    b.HasIndex("CompanyId", "AccountingPeriodId", "AccountId")
                         .IsUnique();
 
                     b.ToTable("saldos_iniciales", null, t =>

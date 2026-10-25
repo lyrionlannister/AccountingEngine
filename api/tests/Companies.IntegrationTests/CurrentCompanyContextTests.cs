@@ -3,6 +3,11 @@ using Companies.Domain.Enums;
 using Companies.DTOs;
 using Companies.Repositories;
 using Companies.Services;
+using Microsoft.EntityFrameworkCore;
+using Users.DTOs;
+using Users.Persistence;
+using Users.Repositories;
+using Users.Services;
 
 namespace Companies.IntegrationTests;
 
@@ -47,7 +52,9 @@ public sealed class CurrentCompanyContextTests : IAsyncLifetime
         await using var database = await TestDatabase.CreateAsync(_postgres);
         await using var context = database.NewContext();
 
-        var founder = await new RegisterUserService(new UserRepository(context)).RegisterAsync(
+        var usersOptions = new DbContextOptionsBuilder<UsersDbContext>().UseNpgsql(_postgres).Options;
+        await using var usersContext = new UsersDbContext(usersOptions);
+        var founder = await new RegisterUserService(new UserRepository(usersContext)).RegisterAsync(
             new RegisterUserRequest("founder@acme.test", "s3cret-password"), CancellationToken.None);
 
         var tenants = new TenantRepository(context);

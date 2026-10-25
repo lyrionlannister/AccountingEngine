@@ -28,17 +28,16 @@ public static class DependencyInjection
 
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<ICompanyRepository, CompanyRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IMembershipRepository, MembershipRepository>();
         services.AddScoped<IPlatformAdministratorRepository, PlatformAdministratorRepository>();
 
         services.AddScoped<CurrentCompanyContext>();
         services.AddScoped<ICurrentCompanyContext>(sp => sp.GetRequiredService<CurrentCompanyContext>());
 
-        services.AddScoped<RegisterUserService>();
         services.AddScoped<CreateTenantWithFirstCompanyService>();
         services.AddScoped<AddMembershipService>();
         services.AddScoped<GrantPlatformAdministratorService>();
+        services.AddScoped<ListMembershipsForUserService>();
 
         return services;
     }

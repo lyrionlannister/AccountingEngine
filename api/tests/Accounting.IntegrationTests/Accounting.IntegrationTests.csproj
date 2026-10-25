@@ -25,6 +25,8 @@
     <ProjectReference Include="..\..\src\Shared\Shared.csproj" />
     <ProjectReference Include="..\..\src\Companies\Companies.csproj" />
     <ProjectReference Include="..\..\src\Companies\Domain\Companies.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Users\Users.csproj" />
+    <ProjectReference Include="..\..\src\Users\Domain\Users.Domain.csproj" />
   </ItemGroup>
 
 </Project>

@@ -9,15 +9,24 @@ public sealed class PostJournalEntryService
     private readonly IJournalEntryRepository _journalEntries;
     private readonly IAccountingPeriodRepository _periods;
     private readonly IVoucherTypeRepository _voucherTypes;
+    private readonly IAccountRepository _accounts;
+    private readonly ICostCenterRepository _costCenters;
+    private readonly IPartyRepository _parties;
 
     public PostJournalEntryService(
         IJournalEntryRepository journalEntries,
         IAccountingPeriodRepository periods,
-        IVoucherTypeRepository voucherTypes)
+        IVoucherTypeRepository voucherTypes,
+        IAccountRepository accounts,
+        ICostCenterRepository costCenters,
+        IPartyRepository parties)
     {
         _journalEntries = journalEntries;
         _periods = periods;
         _voucherTypes = voucherTypes;
+        _accounts = accounts;
+        _costCenters = costCenters;
+        _parties = parties;
     }
 
     public async Task<JournalEntryResult> PostAsync(PostJournalEntryRequest request, CancellationToken cancellationToken)
@@ -43,6 +52,8 @@ public sealed class PostJournalEntryService
         if (!period.Contains(request.EntryDate))
             throw new ArgumentException("Entry date is outside the accounting period.", nameof(request));
 
+        await EnsureLineReferencesBelongToCompanyAsync(request.CompanyId, request.Lines, cancellationToken);
+
         var entry = JournalEntry.Create(
             request.CompanyId, request.VoucherTypeId, request.AccountingPeriodId, request.EntryDate,
             request.Description, request.SourceModule, request.SourceReference);
@@ -53,6 +64,41 @@ public sealed class PostJournalEntryService
         await JournalEntryPoster.PostAsync(_journalEntries, _voucherTypes, entry, request.SequenceNumber, request.PostedBy, cancellationToken);
 
         return ToResult(entry);
+    }
+
+    // La FK de base de datos solo garantiza que la fila existe, no que es de la misma empresa
+    // que el asiento (hallazgo de tenant-isolation) — sin esto, un caller podía contabilizar
+    // contra una cuenta/centro de costo/tercero de otra empresa. Se agrupa por id distinto en
+    // vez de consultar por línea (antipatterns-architecture: queries en loop).
+    private async Task EnsureLineReferencesBelongToCompanyAsync(long companyId, IReadOnlyList<JournalEntryLineRequest> lines, CancellationToken cancellationToken)
+    {
+        var accountIds = lines.Select(l => l.AccountId).Distinct().ToList();
+        var accounts = await _accounts.FindManyByIdAsync(companyId, accountIds, cancellationToken);
+        foreach (var accountId in accountIds)
+        {
+            var account = accounts.FirstOrDefault(a => a.Id == accountId)
+                ?? throw new JournalEntryLineReferenceNotFoundException(nameof(Account), companyId, accountId);
+            if (!account.AllowsPosting)
+                throw new AccountDoesNotAllowPostingException(account.Id);
+        }
+
+        var costCenterIds = lines.Where(l => l.CostCenterId is not null).Select(l => l.CostCenterId!.Value).Distinct().ToList();
+        if (costCenterIds.Count > 0)
+        {
+            var costCenters = await _costCenters.FindManyByIdAsync(companyId, costCenterIds, cancellationToken);
+            var missing = costCenterIds.FirstOrDefault(id => costCenters.All(c => c.Id != id));
+            if (missing != default)
+                throw new JournalEntryLineReferenceNotFoundException(nameof(CostCenter), companyId, missing);
+        }
+
+        var partyIds = lines.Where(l => l.PartyId is not null).Select(l => l.PartyId!.Value).Distinct().ToList();
+        if (partyIds.Count > 0)
+        {
+            var parties = await _parties.FindManyByIdAsync(companyId, partyIds, cancellationToken);
+            var missing = partyIds.FirstOrDefault(id => parties.All(p => p.Id != id));
+            if (missing != default)
+                throw new JournalEntryLineReferenceNotFoundException(nameof(Party), companyId, missing);
+        }
     }
 
     private static bool MatchesRequest(JournalEntry existing, PostJournalEntryRequest request)

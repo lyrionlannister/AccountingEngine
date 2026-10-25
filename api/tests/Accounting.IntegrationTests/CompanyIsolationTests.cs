@@ -5,12 +5,15 @@ using Accounting.Repositories;
 using Accounting.Services;
 using Companies.Domain;
 using Companies.Domain.Enums;
-using Companies.DTOs;
 using Companies.Persistence;
 using Companies.Repositories;
 using Companies.Services;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Users.DTOs;
+using Users.Persistence;
+using Users.Repositories;
+using Users.Services;
 
 namespace Accounting.IntegrationTests;
 
@@ -46,8 +49,9 @@ public sealed class CompanyIsolationTests : IAsyncLifetime
     public async Task GlobalFilter_NeverLeaksJournalEntriesAcrossCompanies()
     {
         await using var companiesContext = await MigratedCompaniesContextAsync();
+        await using var usersContext = await MigratedUsersContextAsync();
 
-        var users = new UserRepository(companiesContext);
+        var users = new UserRepository(usersContext);
         var userA = await new RegisterUserService(users).RegisterAsync(
             new RegisterUserRequest("admin-a@acme.test", "s3cret-password"), CancellationToken.None);
         var userB = await new RegisterUserService(users).RegisterAsync(
@@ -79,6 +83,48 @@ public sealed class CompanyIsolationTests : IAsyncLifetime
         Assert.Null(await contextAsB.JournalEntries.FirstOrDefaultAsync(e => e.Id == entryIdA));
     }
 
+    [Fact]
+    public async Task PostAsync_WithAccountFromAnotherCompany_ThrowsReferenceNotFound()
+    {
+        // La FK de "cuentas" por sí sola solo prueba que la fila existe, no que es de la misma
+        // empresa que el asiento — hallazgo de tenant-isolation sobre PostJournalEntryService.
+        await using var database = await TestDatabase.CreateAsync(_postgres);
+        const long companyA = 1;
+        const long companyB = 2;
+
+        await using var contextA = database.NewContext(companyA);
+        var accountOfCompanyA = Account.Create(companyA, "1000", "Cash", AccountNature.Debit, AccountType.Asset, null, true);
+        contextA.Accounts.Add(accountOfCompanyA);
+        await contextA.SaveChangesAsync();
+
+        await using var contextB = database.NewContext(companyB);
+        var currency = Currency.Create("USD", "US Dollar", 2);
+        var ownAccountOfCompanyB = Account.Create(companyB, "4000", "Revenue", AccountNature.Credit, AccountType.Revenue, null, true);
+        contextB.Currencies.Add(currency);
+        contextB.Accounts.Add(ownAccountOfCompanyB);
+        var voucherType = VoucherType.Create(companyB, "GEN", "General", VoucherNumberingMode.Automatic);
+        contextB.VoucherTypes.Add(voucherType);
+        var period = AccountingPeriod.Create(companyB, "2026-01", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31));
+        contextB.AccountingPeriods.Add(period);
+        await contextB.SaveChangesAsync();
+
+        var service = new PostJournalEntryService(
+            new JournalEntryRepository(contextB), new AccountingPeriodRepository(contextB), new VoucherTypeRepository(contextB),
+            new AccountRepository(contextB), new CostCenterRepository(contextB), new PartyRepository(contextB));
+
+        // companyB intenta contabilizar contra una cuenta que en realidad es de companyA.
+        var request = new PostJournalEntryRequest(
+            companyB, voucherType.Id, period.Id, new DateOnly(2026, 1, 15), "Cross-company attempt", "tester",
+            new List<JournalEntryLineRequest>
+            {
+                new(accountOfCompanyA.Id, null, null, currency.Id, 100m, 0m),
+                new(ownAccountOfCompanyB.Id, null, null, currency.Id, 0m, 100m)
+            });
+
+        await Assert.ThrowsAsync<JournalEntryLineReferenceNotFoundException>(
+            () => service.PostAsync(request, CancellationToken.None));
+    }
+
     private async Task<CompaniesDbContext> MigratedCompaniesContextAsync()
     {
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(_postgres);
@@ -90,6 +136,15 @@ public sealed class CompanyIsolationTests : IAsyncLifetime
             .Options;
 
         var context = new CompaniesDbContext(options);
+        await context.Database.MigrateAsync();
+        return context;
+    }
+
+    private async Task<UsersDbContext> MigratedUsersContextAsync()
+    {
+        var options = new DbContextOptionsBuilder<UsersDbContext>().UseNpgsql(_postgres).Options;
+
+        var context = new UsersDbContext(options);
         await context.Database.MigrateAsync();
         return context;
     }
@@ -117,7 +172,8 @@ public sealed class CompanyIsolationTests : IAsyncLifetime
         await context.SaveChangesAsync();
 
         var service = new PostJournalEntryService(
-            new JournalEntryRepository(context), new AccountingPeriodRepository(context), new VoucherTypeRepository(context));
+            new JournalEntryRepository(context), new AccountingPeriodRepository(context), new VoucherTypeRepository(context),
+            new AccountRepository(context), new CostCenterRepository(context), new PartyRepository(context));
 
         var request = new PostJournalEntryRequest(
             companyId, voucherType.Id, period.Id, new DateOnly(2026, 1, 15), $"Entry for company {companyId}", "tester",

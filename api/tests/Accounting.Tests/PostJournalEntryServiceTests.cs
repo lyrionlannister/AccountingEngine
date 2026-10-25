@@ -21,17 +21,22 @@ public class PostJournalEntryServiceTests
         PostedBy: "tester",
         Lines: new List<JournalEntryLineRequest>
         {
-            new(AccountId: 1, null, null, CurrencyId: 1, debit, 0m),
-            new(AccountId: 2, null, null, CurrencyId: 1, 0m, debit)
+            // Mismo AccountId en ambas líneas a propósito: a los fakes de este archivo no les
+            // interesa distinguir cuentas, solo el período/idempotencia — una sola cuenta
+            // sembrada (Id por defecto 0) alcanza y es válida para partida doble.
+            new(AccountId: 0, null, null, CurrencyId: 1, debit, 0m),
+            new(AccountId: 0, null, null, CurrencyId: 1, 0m, debit)
         },
         SourceModule: null,
         SourceReference: sourceReference);
 
-    private static (PostJournalEntryService Service, FakeJournalEntryRepository Entries) CreateService(PeriodStatus periodStatus, VoucherNumberingMode numberingMode)
+    private static (PostJournalEntryService Service, FakeJournalEntryRepository Entries) CreateService(
+        PeriodStatus periodStatus, VoucherNumberingMode numberingMode, bool seedAccount = true, bool accountAllowsPosting = true)
     {
         var entries = new FakeJournalEntryRepository();
         var periods = new FakeAccountingPeriodRepository();
         var voucherTypes = new FakeVoucherTypeRepository();
+        var accounts = new FakeAccountRepository();
 
         var period = AccountingPeriod.Create(CompanyId, "2026-01", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31));
         if (periodStatus == PeriodStatus.Closed)
@@ -39,8 +44,11 @@ public class PostJournalEntryServiceTests
         periods.Periods.Add(period);
 
         voucherTypes.VoucherTypes.Add(VoucherType.Create(CompanyId, "GEN", "General", numberingMode));
+        if (seedAccount)
+            accounts.Accounts.Add(Account.Create(CompanyId, "1000", "Cash", AccountNature.Debit, AccountType.Asset, null, accountAllowsPosting));
 
-        return (new PostJournalEntryService(entries, periods, voucherTypes), entries);
+        return (new PostJournalEntryService(
+            entries, periods, voucherTypes, accounts, new FakeCostCenterRepository(), new FakePartyRepository()), entries);
     }
 
     [Fact]
@@ -74,5 +82,25 @@ public class PostJournalEntryServiceTests
 
         await Assert.ThrowsAsync<JournalEntryIdempotencyConflictException>(
             () => service.PostAsync(BuildRequest(debit: 200m), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task PostAsync_WithAccountNotBelongingToCompany_ThrowsReferenceNotFound()
+    {
+        // Antes de este check, una FK por sí sola solo probaba que la cuenta existía en algún
+        // lado, no que fuera de la misma empresa que el asiento (hallazgo de tenant-isolation).
+        var (service, _) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic, seedAccount: false);
+
+        await Assert.ThrowsAsync<JournalEntryLineReferenceNotFoundException>(
+            () => service.PostAsync(BuildRequest(), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task PostAsync_WithAccountThatDoesNotAllowPosting_ThrowsAccountDoesNotAllowPosting()
+    {
+        var (service, _) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic, accountAllowsPosting: false);
+
+        await Assert.ThrowsAsync<AccountDoesNotAllowPostingException>(
+            () => service.PostAsync(BuildRequest(), CancellationToken.None));
     }
 }

@@ -15,6 +15,29 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - accounting-engine-net
+
+  # Cache de reportes (decisión de proyecto previa) + fuente de verdad del camino caliente de
+  # Auth (tasks/plan-auth.md). notify-keyspace-events Ex habilita el listener de expiración de
+  # sesiones (RedisSessionExpiryListener). Sin puerto expuesto al host: solo "api" lo necesita.
+  redis:
+    image: docker.io/library/redis:7-alpine
+    container_name: accounting-engine-redis
+    # requirepass: sin auth, cualquier proceso en la red docker podía leer/forjar/borrar
+    # sesiones de cualquier usuario escribiendo directo en Redis. appendonly + volumen:
+    # Redis ahora guarda estado de sesión, no solo caché de reportes — sin persistencia, un
+    # reinicio del contenedor desloguea a todos los usuarios de golpe.
+    command: redis-server --notify-keyspace-events Ex --requirepass ${REDIS_PASSWORD} --appendonly yes
+    volumes:
+      - accounting-engine-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - accounting-engine-net
 
   api:
     build:
@@ -24,9 +47,15 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY}
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - accounting-engine-net
   nginx:
     build:
       context: .
@@ -36,6 +65,19 @@ services:
       - "${HTTP_PORT}:80"
     depends_on:
       - api
+    networks:
+      accounting-engine-net:
+        # IP fija: Api/Program.cs confía solo en esta dirección vía ForwardedHeadersOptions.KnownProxies
+        # para leer la IP real del cliente (tasks/plan-auth.md) — no en el subnet completo ni en el
+        # rango por defecto de Docker.
+        ipv4_address: 172.28.0.10
+
+networks:
+  accounting-engine-net:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
 
 volumes:
   accounting-engine-pgdata:
+  accounting-engine-redisdata:

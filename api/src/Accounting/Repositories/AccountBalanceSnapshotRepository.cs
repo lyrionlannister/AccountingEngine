@@ -18,14 +18,17 @@ public sealed class AccountBalanceSnapshotRepository : IAccountBalanceSnapshotRe
 
     public async Task<(decimal DebitTotal, decimal CreditTotal)> SumPostedLinesAsync(long companyId, long accountingPeriodId, long accountId, CancellationToken cancellationToken)
     {
-        var lines = await _context.JournalEntries
+        // Agregado en SQL (un solo round-trip vía GroupBy constante), no en memoria: traer
+        // todas las líneas para sumarlas en C# no escala con el número de líneas del período.
+        var totals = await _context.JournalEntries
             .Where(e => e.CompanyId == companyId && e.AccountingPeriodId == accountingPeriodId && e.Status == JournalEntryStatus.Posted)
             .SelectMany(e => e.Lines)
             .Where(l => l.AccountId == accountId)
-            .Select(l => new { l.DebitAmount, l.CreditAmount })
-            .ToListAsync(cancellationToken);
+            .GroupBy(_ => 1)
+            .Select(g => new { Debit = g.Sum(l => l.DebitAmount), Credit = g.Sum(l => l.CreditAmount) })
+            .FirstOrDefaultAsync(cancellationToken);
 
-        return (lines.Sum(l => l.DebitAmount), lines.Sum(l => l.CreditAmount));
+        return totals is null ? (0m, 0m) : (totals.Debit, totals.Credit);
     }
 
     public async Task AddAsync(AccountBalanceSnapshot snapshot, CancellationToken cancellationToken)

@@ -65,7 +65,9 @@ public sealed class PostJournalEntryServiceTests : IAsyncLifetime
         var journalEntries = new JournalEntryRepository(context);
         var periods = new AccountingPeriodRepository(context);
         var voucherTypes = new VoucherTypeRepository(context);
-        var service = new PostJournalEntryService(journalEntries, periods, voucherTypes);
+        var service = new PostJournalEntryService(
+            journalEntries, periods, voucherTypes,
+            new AccountRepository(context), new CostCenterRepository(context), new PartyRepository(context));
 
         var request = new PostJournalEntryRequest(
             companyId,
@@ -135,7 +137,9 @@ public sealed class PostJournalEntryServiceTests : IAsyncLifetime
         var journalEntries = new JournalEntryRepository(context);
         var periods = new AccountingPeriodRepository(context);
         var voucherTypes = new VoucherTypeRepository(context);
-        var service = new PostJournalEntryService(journalEntries, periods, voucherTypes);
+        var service = new PostJournalEntryService(
+            journalEntries, periods, voucherTypes,
+            new AccountRepository(context), new CostCenterRepository(context), new PartyRepository(context));
 
         JournalEntryLineRequest[] Lines() => new[]
         {

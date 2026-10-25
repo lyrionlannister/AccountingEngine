@@ -3,6 +3,7 @@ namespace Accounting.Domain;
 public sealed class AccountBalanceSnapshot
 {
     public long Id { get; private set; }
+    public long CompanyId { get; private set; }
     public long AccountingPeriodId { get; private set; }
     public long AccountId { get; private set; }
     public decimal DebitTotal { get; private set; }
@@ -13,10 +14,11 @@ public sealed class AccountBalanceSnapshot
     {
     }
 
-    public static AccountBalanceSnapshot Create(long accountingPeriodId, long accountId, decimal debitTotal, decimal creditTotal, DateTimeOffset calculatedAt)
+    public static AccountBalanceSnapshot Create(long companyId, long accountingPeriodId, long accountId, decimal debitTotal, decimal creditTotal, DateTimeOffset calculatedAt)
     {
         var snapshot = new AccountBalanceSnapshot
         {
+            CompanyId = companyId,
             AccountingPeriodId = accountingPeriodId,
             AccountId = accountId
         };

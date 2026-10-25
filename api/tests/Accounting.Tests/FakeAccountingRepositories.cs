@@ -1,4 +1,5 @@
 using Accounting.Domain;
+using Accounting.Domain.Enums;
 using Accounting.Services;
 
 namespace Accounting.Tests;
@@ -13,6 +14,10 @@ internal sealed class FakeJournalEntryRepository : IJournalEntryRepository
     public Task<JournalEntry?> FindBySourceAsync(long companyId, string? sourceModule, string sourceReference, CancellationToken cancellationToken) =>
         Task.FromResult(Entries.FirstOrDefault(e =>
             e.CompanyId == companyId && e.SourceModule == sourceModule && e.SourceReference == sourceReference));
+
+    public Task<bool> HasDraftEntriesAsync(long companyId, long accountingPeriodId, CancellationToken cancellationToken) =>
+        Task.FromResult(Entries.Any(e =>
+            e.CompanyId == companyId && e.AccountingPeriodId == accountingPeriodId && e.Status == JournalEntryStatus.Draft));
 
     public Task AddAsync(JournalEntry entry, CancellationToken cancellationToken)
     {
@@ -50,6 +55,33 @@ internal sealed class FakeVoucherTypeRepository : IVoucherTypeRepository
 
     public Task<VoucherType?> FindByIdAsync(long companyId, long id, CancellationToken cancellationToken) =>
         Task.FromResult(VoucherTypes.FirstOrDefault(v => v.CompanyId == companyId && v.Id == id));
+}
+
+internal sealed class FakeAccountRepository : IAccountRepository
+{
+    public List<Account> Accounts { get; } = new();
+
+    public Task<IReadOnlyList<Account>> FindManyByIdAsync(long companyId, IReadOnlyCollection<long> ids, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Account>>(
+            Accounts.Where(a => a.CompanyId == companyId && ids.Contains(a.Id)).ToList());
+}
+
+internal sealed class FakeCostCenterRepository : ICostCenterRepository
+{
+    public List<CostCenter> CostCenters { get; } = new();
+
+    public Task<IReadOnlyList<CostCenter>> FindManyByIdAsync(long companyId, IReadOnlyCollection<long> ids, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<CostCenter>>(
+            CostCenters.Where(c => c.CompanyId == companyId && ids.Contains(c.Id)).ToList());
+}
+
+internal sealed class FakePartyRepository : IPartyRepository
+{
+    public List<Party> Parties { get; } = new();
+
+    public Task<IReadOnlyList<Party>> FindManyByIdAsync(long companyId, IReadOnlyCollection<long> ids, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Party>>(
+            Parties.Where(p => p.CompanyId == companyId && ids.Contains(p.Id)).ToList());
 }
 
 internal sealed class FakeAccountBalanceSnapshotRepository : IAccountBalanceSnapshotRepository

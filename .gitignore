@@ -19,3 +19,6 @@ appsettings.*.local.json
 # Artefactos generados por skills de planeación (spec-driven-development, planning-and-task-breakdown) — no son parte del repo
 docs/specs/
 tasks/
+
+# Artefactos generados por /graphify — no son parte del repo
+graphify-out/

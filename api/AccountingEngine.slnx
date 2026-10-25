@@ -17,6 +17,12 @@
   <Folder Name="/src/Companies/Domain/">
     <Project Path="src/Companies/Domain/Companies.Domain.csproj" />
   </Folder>
+  <Folder Name="/src/Auth/">
+    <Project Path="src/Auth/Auth.csproj" />
+  </Folder>
+  <Folder Name="/src/Auth/Domain/">
+    <Project Path="src/Auth/Domain/Auth.Domain.csproj" />
+  </Folder>
   <Folder Name="/src/Users/">
     <Project Path="src/Users/Users.csproj" />
   </Folder>
@@ -35,5 +41,7 @@
     <Project Path="tests/Users.Tests/Users.Tests.csproj" />
     <Project Path="tests/Users.ArchTests/Users.ArchTests.csproj" />
     <Project Path="tests/Users.IntegrationTests/Users.IntegrationTests.csproj" />
+    <Project Path="tests/Auth.Tests/Auth.Tests.csproj" />
+    <Project Path="tests/Auth.ArchTests/Auth.ArchTests.csproj" />
   </Folder>
 </Solution>

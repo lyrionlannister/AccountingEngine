@@ -20,6 +20,9 @@ public sealed class PeriodReopenRequestRepository : IPeriodReopenRequestReposito
     public Task<PeriodReopenRequest?> FindByIdAsync(long companyId, long id, CancellationToken cancellationToken) =>
         _context.PeriodReopenRequests.FirstOrDefaultAsync(r => r.CompanyId == companyId && r.Id == id, cancellationToken);
 
+    public Task<PeriodReopenRequest?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
+        _context.PeriodReopenRequests.AsNoTracking().FirstOrDefaultAsync(r => r.CompanyId == companyId && r.PublicId == publicId, cancellationToken);
+
     public async Task UpdateAsync(PeriodReopenRequest request, CancellationToken cancellationToken) =>
         await _context.SaveChangesAsync(cancellationToken);
 }

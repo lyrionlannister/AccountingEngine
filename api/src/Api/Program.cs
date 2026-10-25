@@ -73,6 +73,7 @@ builder.Services.AddScoped<Api.Security.CompanyContextFilter>();
 builder.Services.AddControllers(options => options.Filters.AddService<Api.Security.CompanyContextFilter>());
 builder.Services.AddSignalR();
 
+builder.Services.AddExceptionHandler<AccountingExceptionHandler>();
 builder.Services.AddExceptionHandler<AuthExceptionHandler>();
 builder.Services.AddProblemDetails();
 

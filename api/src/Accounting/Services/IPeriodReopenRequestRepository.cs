@@ -8,5 +8,7 @@ public interface IPeriodReopenRequestRepository
 
     Task<PeriodReopenRequest?> FindByIdAsync(long companyId, long id, CancellationToken cancellationToken);
 
+    Task<PeriodReopenRequest?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken);
+
     Task UpdateAsync(PeriodReopenRequest request, CancellationToken cancellationToken);
 }

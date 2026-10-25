@@ -18,6 +18,11 @@ public sealed class JournalEntryRepository : IJournalEntryRepository
             .Include(e => e.Lines)
             .FirstOrDefaultAsync(e => e.CompanyId == companyId && e.Id == id, cancellationToken);
 
+    public Task<JournalEntry?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
+        _context.JournalEntries
+            .Include(e => e.Lines)
+            .FirstOrDefaultAsync(e => e.CompanyId == companyId && e.PublicId == publicId, cancellationToken);
+
     public Task<JournalEntry?> FindBySourceAsync(long companyId, string? sourceModule, string sourceReference, CancellationToken cancellationToken) =>
         _context.JournalEntries
             .Include(e => e.Lines)

@@ -14,6 +14,9 @@ public sealed class AccountingPeriodRepository : IAccountingPeriodRepository
     public Task<AccountingPeriod?> FindByIdAsync(long companyId, long id, CancellationToken cancellationToken) =>
         _context.AccountingPeriods.FirstOrDefaultAsync(p => p.CompanyId == companyId && p.Id == id, cancellationToken);
 
+    public Task<AccountingPeriod?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
+        _context.AccountingPeriods.AsNoTracking().FirstOrDefaultAsync(p => p.CompanyId == companyId && p.PublicId == publicId, cancellationToken);
+
     public async Task UpdateAsync(AccountingPeriod period, CancellationToken cancellationToken) =>
         await _context.SaveChangesAsync(cancellationToken);
 }

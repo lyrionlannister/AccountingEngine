@@ -179,54 +179,6 @@ namespace Companies.Persistence.Migrations
                     b.ToTable("inquilinos", (string)null);
                 });
 
-            modelBuilder.Entity("Companies.Domain.User", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(320)
-                        .HasColumnType("character varying(320)")
-                        .HasColumnName("correo");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("activo");
-
-                    b.Property<string>("NormalizedEmail")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("text")
-                        .HasColumnName("correo_normalizado")
-                        .HasComputedColumnSql("lower(correo)", true);
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("contrasena_hash");
-
-                    b.Property<Guid>("PublicId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id_publico")
-                        .HasDefaultValueSql("uuidv7()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedEmail")
-                        .IsUnique()
-                        .HasDatabaseName("ix_usuarios_correo_normalizado");
-
-                    b.HasIndex("PublicId")
-                        .IsUnique();
-
-                    b.ToTable("usuarios", (string)null);
-                });
-
             modelBuilder.Entity("Companies.Domain.Company", b =>
                 {
                     b.HasOne("Companies.Domain.Tenant", null)
@@ -245,23 +197,6 @@ namespace Companies.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_membresias_empresa");
-
-                    b.HasOne("Companies.Domain.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_membresias_usuario");
-                });
-
-            modelBuilder.Entity("Companies.Domain.PlatformAdministrator", b =>
-                {
-                    b.HasOne("Companies.Domain.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_administradores_plataforma_usuario");
                 });
 #pragma warning restore 612, 618
         }

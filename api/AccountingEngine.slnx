@@ -34,5 +34,6 @@
     <Project Path="tests/Companies.IntegrationTests/Companies.IntegrationTests.csproj" />
     <Project Path="tests/Users.Tests/Users.Tests.csproj" />
     <Project Path="tests/Users.ArchTests/Users.ArchTests.csproj" />
+    <Project Path="tests/Users.IntegrationTests/Users.IntegrationTests.csproj" />
   </Folder>
 </Solution>

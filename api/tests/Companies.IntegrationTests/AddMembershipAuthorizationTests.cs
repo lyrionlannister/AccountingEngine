@@ -4,6 +4,11 @@ using Companies.DTOs;
 using Companies.Persistence;
 using Companies.Repositories;
 using Companies.Services;
+using Microsoft.EntityFrameworkCore;
+using Users.DTOs;
+using Users.Persistence;
+using Users.Repositories;
+using Users.Services;
 
 namespace Companies.IntegrationTests;
 
@@ -19,9 +24,14 @@ public sealed class AddMembershipAuthorizationTests : IAsyncLifetime
 
     public Task DisposeAsync() => Task.CompletedTask;
 
-    private static async Task<RegisterUserResult> RegisterUserAsync(CompaniesDbContext context, string email) =>
-        await new RegisterUserService(new UserRepository(context)).RegisterAsync(
+    private async Task<RegisterUserResult> RegisterUserAsync(string email)
+    {
+        var options = new DbContextOptionsBuilder<UsersDbContext>().UseNpgsql(_postgres).Options;
+        await using var usersContext = new UsersDbContext(options);
+
+        return await new RegisterUserService(new UserRepository(usersContext)).RegisterAsync(
             new RegisterUserRequest(email, "s3cret-password"), CancellationToken.None);
+    }
 
     [Fact]
     public async Task AddAsync_InvokerWithoutAdminMembership_ThrowsNotCompanyAdmin()
@@ -29,9 +39,9 @@ public sealed class AddMembershipAuthorizationTests : IAsyncLifetime
         await using var database = await TestDatabase.CreateAsync(_postgres);
         await using var context = database.NewContext();
 
-        var founder = await RegisterUserAsync(context, "founder@acme.test");
-        var viewer = await RegisterUserAsync(context, "viewer@acme.test");
-        var target = await RegisterUserAsync(context, "target@acme.test");
+        var founder = await RegisterUserAsync("founder@acme.test");
+        var viewer = await RegisterUserAsync("viewer@acme.test");
+        var target = await RegisterUserAsync("target@acme.test");
 
         var tenants = new TenantRepository(context);
         var (_, company, _) = await tenants.CreateWithFirstCompanyAsync(
@@ -57,8 +67,8 @@ public sealed class AddMembershipAuthorizationTests : IAsyncLifetime
         await using var database = await TestDatabase.CreateAsync(_postgres);
         await using var context = database.NewContext();
 
-        var founder = await RegisterUserAsync(context, "founder@acme.test");
-        var target = await RegisterUserAsync(context, "target@acme.test");
+        var founder = await RegisterUserAsync("founder@acme.test");
+        var target = await RegisterUserAsync("target@acme.test");
 
         var tenants = new TenantRepository(context);
         var (_, company, adminMembership) = await tenants.CreateWithFirstCompanyAsync(
@@ -84,8 +94,8 @@ public sealed class AddMembershipAuthorizationTests : IAsyncLifetime
         await using var database = await TestDatabase.CreateAsync(_postgres);
         await using var context = database.NewContext();
 
-        var founder = await RegisterUserAsync(context, "founder@acme.test");
-        var target = await RegisterUserAsync(context, "target@acme.test");
+        var founder = await RegisterUserAsync("founder@acme.test");
+        var target = await RegisterUserAsync("target@acme.test");
 
         var tenants = new TenantRepository(context);
         var (_, company, adminMembership) = await tenants.CreateWithFirstCompanyAsync(

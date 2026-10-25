@@ -10,13 +10,6 @@ public sealed class CompanyMembershipNotFoundException : Exception
     }
 }
 
-public sealed class DuplicateEmailException : Exception
-{
-    public DuplicateEmailException(string email) : base($"A user with email '{email}' already exists.")
-    {
-    }
-}
-
 public sealed class NotCompanyAdminException : Exception
 {
     public NotCompanyAdminException(long userId, long companyId)

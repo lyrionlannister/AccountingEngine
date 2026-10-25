@@ -5,12 +5,15 @@ using Accounting.Repositories;
 using Accounting.Services;
 using Companies.Domain;
 using Companies.Domain.Enums;
-using Companies.DTOs;
 using Companies.Persistence;
 using Companies.Repositories;
 using Companies.Services;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Users.DTOs;
+using Users.Persistence;
+using Users.Repositories;
+using Users.Services;
 
 namespace Accounting.IntegrationTests;
 
@@ -46,8 +49,9 @@ public sealed class CompanyIsolationTests : IAsyncLifetime
     public async Task GlobalFilter_NeverLeaksJournalEntriesAcrossCompanies()
     {
         await using var companiesContext = await MigratedCompaniesContextAsync();
+        await using var usersContext = await MigratedUsersContextAsync();
 
-        var users = new UserRepository(companiesContext);
+        var users = new UserRepository(usersContext);
         var userA = await new RegisterUserService(users).RegisterAsync(
             new RegisterUserRequest("admin-a@acme.test", "s3cret-password"), CancellationToken.None);
         var userB = await new RegisterUserService(users).RegisterAsync(
@@ -90,6 +94,15 @@ public sealed class CompanyIsolationTests : IAsyncLifetime
             .Options;
 
         var context = new CompaniesDbContext(options);
+        await context.Database.MigrateAsync();
+        return context;
+    }
+
+    private async Task<UsersDbContext> MigratedUsersContextAsync()
+    {
+        var options = new DbContextOptionsBuilder<UsersDbContext>().UseNpgsql(_postgres).Options;
+
+        var context = new UsersDbContext(options);
         await context.Database.MigrateAsync();
         return context;
     }

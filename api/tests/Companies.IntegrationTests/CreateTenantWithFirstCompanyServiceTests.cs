@@ -2,6 +2,10 @@ using Companies.DTOs;
 using Companies.Repositories;
 using Companies.Services;
 using Microsoft.EntityFrameworkCore;
+using Users.DTOs;
+using Users.Persistence;
+using Users.Repositories;
+using Users.Services;
 
 namespace Companies.IntegrationTests;
 
@@ -23,7 +27,9 @@ public sealed class CreateTenantWithFirstCompanyServiceTests : IAsyncLifetime
         await using var database = await TestDatabase.CreateAsync(_postgres);
         await using var context = database.NewContext();
 
-        var users = new UserRepository(context);
+        var usersOptions = new DbContextOptionsBuilder<UsersDbContext>().UseNpgsql(_postgres).Options;
+        await using var usersContext = new UsersDbContext(usersOptions);
+        var users = new UserRepository(usersContext);
         var user = await new RegisterUserService(users).RegisterAsync(
             new RegisterUserRequest("founder@acme.test", "s3cret-password"), CancellationToken.None);
 

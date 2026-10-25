@@ -1,9 +1,9 @@
-using Companies.DTOs;
-using Companies.Repositories;
-using Companies.Services;
 using Microsoft.EntityFrameworkCore;
+using Users.DTOs;
+using Users.Repositories;
+using Users.Services;
 
-namespace Companies.IntegrationTests;
+namespace Users.IntegrationTests;
 
 [Collection(PostgresCollection.Name)]
 public sealed class RegisterUserServiceTests : IAsyncLifetime

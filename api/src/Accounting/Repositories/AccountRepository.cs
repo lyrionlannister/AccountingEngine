@@ -13,4 +13,7 @@ public sealed class AccountRepository : IAccountRepository
 
     public async Task<IReadOnlyList<Account>> FindManyByIdAsync(long companyId, IReadOnlyCollection<long> ids, CancellationToken cancellationToken) =>
         await _context.Accounts.Where(a => a.CompanyId == companyId && ids.Contains(a.Id)).ToListAsync(cancellationToken);
+
+    public Task<Account?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
+        _context.Accounts.AsNoTracking().FirstOrDefaultAsync(a => a.CompanyId == companyId && a.PublicId == publicId, cancellationToken);
 }

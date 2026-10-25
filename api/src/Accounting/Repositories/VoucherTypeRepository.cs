@@ -13,4 +13,7 @@ public sealed class VoucherTypeRepository : IVoucherTypeRepository
 
     public Task<VoucherType?> FindByIdAsync(long companyId, long id, CancellationToken cancellationToken) =>
         _context.VoucherTypes.FirstOrDefaultAsync(v => v.CompanyId == companyId && v.Id == id, cancellationToken);
+
+    public Task<VoucherType?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
+        _context.VoucherTypes.AsNoTracking().FirstOrDefaultAsync(v => v.CompanyId == companyId && v.PublicId == publicId, cancellationToken);
 }

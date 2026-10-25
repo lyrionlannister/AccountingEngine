@@ -40,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<ICostCenterRepository, CostCenterRepository>();
         services.AddScoped<IPartyRepository, PartyRepository>();
+        services.AddScoped<ICurrencyRepository, CurrencyRepository>();
 
         services.AddScoped<PostJournalEntryService>();
         services.AddScoped<ReverseJournalEntryService>();

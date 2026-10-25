@@ -11,6 +11,9 @@ internal sealed class FakeJournalEntryRepository : IJournalEntryRepository
     public Task<JournalEntry?> FindByIdAsync(long companyId, long id, CancellationToken cancellationToken) =>
         Task.FromResult(Entries.FirstOrDefault(e => e.CompanyId == companyId && e.Id == id));
 
+    public Task<JournalEntry?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
+        Task.FromResult(Entries.FirstOrDefault(e => e.CompanyId == companyId && e.PublicId == publicId));
+
     public Task<JournalEntry?> FindBySourceAsync(long companyId, string? sourceModule, string sourceReference, CancellationToken cancellationToken) =>
         Task.FromResult(Entries.FirstOrDefault(e =>
             e.CompanyId == companyId && e.SourceModule == sourceModule && e.SourceReference == sourceReference));
@@ -46,6 +49,9 @@ internal sealed class FakeAccountingPeriodRepository : IAccountingPeriodReposito
     public Task<AccountingPeriod?> FindByIdAsync(long companyId, long id, CancellationToken cancellationToken) =>
         Task.FromResult(Periods.FirstOrDefault(p => p.CompanyId == companyId && p.Id == id));
 
+    public Task<AccountingPeriod?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
+        Task.FromResult(Periods.FirstOrDefault(p => p.CompanyId == companyId && p.PublicId == publicId));
+
     public Task UpdateAsync(AccountingPeriod period, CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
@@ -55,6 +61,9 @@ internal sealed class FakeVoucherTypeRepository : IVoucherTypeRepository
 
     public Task<VoucherType?> FindByIdAsync(long companyId, long id, CancellationToken cancellationToken) =>
         Task.FromResult(VoucherTypes.FirstOrDefault(v => v.CompanyId == companyId && v.Id == id));
+
+    public Task<VoucherType?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
+        Task.FromResult(VoucherTypes.FirstOrDefault(v => v.CompanyId == companyId && v.PublicId == publicId));
 }
 
 internal sealed class FakeAccountRepository : IAccountRepository
@@ -64,6 +73,9 @@ internal sealed class FakeAccountRepository : IAccountRepository
     public Task<IReadOnlyList<Account>> FindManyByIdAsync(long companyId, IReadOnlyCollection<long> ids, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<Account>>(
             Accounts.Where(a => a.CompanyId == companyId && ids.Contains(a.Id)).ToList());
+
+    public Task<Account?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
+        Task.FromResult(Accounts.FirstOrDefault(a => a.CompanyId == companyId && a.PublicId == publicId));
 }
 
 internal sealed class FakeCostCenterRepository : ICostCenterRepository
@@ -73,6 +85,9 @@ internal sealed class FakeCostCenterRepository : ICostCenterRepository
     public Task<IReadOnlyList<CostCenter>> FindManyByIdAsync(long companyId, IReadOnlyCollection<long> ids, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<CostCenter>>(
             CostCenters.Where(c => c.CompanyId == companyId && ids.Contains(c.Id)).ToList());
+
+    public Task<CostCenter?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
+        Task.FromResult(CostCenters.FirstOrDefault(c => c.CompanyId == companyId && c.PublicId == publicId));
 }
 
 internal sealed class FakePartyRepository : IPartyRepository
@@ -82,6 +97,17 @@ internal sealed class FakePartyRepository : IPartyRepository
     public Task<IReadOnlyList<Party>> FindManyByIdAsync(long companyId, IReadOnlyCollection<long> ids, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<Party>>(
             Parties.Where(p => p.CompanyId == companyId && ids.Contains(p.Id)).ToList());
+
+    public Task<Party?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
+        Task.FromResult(Parties.FirstOrDefault(p => p.CompanyId == companyId && p.PublicId == publicId));
+}
+
+internal sealed class FakeCurrencyRepository : ICurrencyRepository
+{
+    public List<Currency> Currencies { get; } = new();
+
+    public Task<Currency?> FindByCodeAsync(string code, CancellationToken cancellationToken) =>
+        Task.FromResult(Currencies.FirstOrDefault(c => c.Code == code));
 }
 
 internal sealed class FakeAccountBalanceSnapshotRepository : IAccountBalanceSnapshotRepository

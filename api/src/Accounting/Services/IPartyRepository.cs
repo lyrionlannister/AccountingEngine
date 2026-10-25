@@ -5,4 +5,6 @@ namespace Accounting.Services;
 public interface IPartyRepository
 {
     Task<IReadOnlyList<Party>> FindManyByIdAsync(long companyId, IReadOnlyCollection<long> ids, CancellationToken cancellationToken);
+
+    Task<Party?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken);
 }

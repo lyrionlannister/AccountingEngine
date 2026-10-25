@@ -29,6 +29,18 @@ public sealed class UserSession
         };
     }
 
+    // Para rehidratar desde un almacén que no materializa por reflexión (Redis) — EF Core
+    // (respaldo de Postgres) nunca necesita esto, escribe directo a los campos privados.
+    public static UserSession Reconstitute(Guid sessionId, long userId, string ip, DateTimeOffset createdAt, DateTimeOffset lastSeenAt) =>
+        new()
+        {
+            SessionId = sessionId,
+            UserId = userId,
+            Ip = ip,
+            CreatedAt = createdAt,
+            LastSeenAt = lastSeenAt
+        };
+
     public void Touch(DateTimeOffset now) => LastSeenAt = now;
 
     public bool IsExpiredAt(DateTimeOffset now, TimeSpan slidingWindow) => now - LastSeenAt > slidingWindow;

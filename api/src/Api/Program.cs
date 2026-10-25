@@ -1,4 +1,5 @@
 using Accounting;
+using Auth;
 using Companies;
 using Scalar.AspNetCore;
 using Users;
@@ -9,6 +10,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddUsersModule(builder.Configuration);
 builder.Services.AddCompaniesModule(builder.Configuration);
 builder.Services.AddAccountingModule(builder.Configuration);
+builder.Services.AddAuthModule(builder.Configuration);
 
 var app = builder.Build();
 

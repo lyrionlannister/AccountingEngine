@@ -32,12 +32,26 @@ public sealed class PostgresSessionFallbackStore : ISessionStore
         return session;
     }
 
-    public Task<UserSession?> FindAsync(Guid sessionId, CancellationToken cancellationToken) =>
-        _context.Sessions.FirstOrDefaultAsync(s => s.SessionId == sessionId, cancellationToken);
-
-    public async Task TouchAsync(Guid sessionId, CancellationToken cancellationToken)
+    // Escribe la sesión exacta que Redis ya aceptó (mismo SessionId) — nunca re-valida la
+    // regla de 1 IP, eso ya lo decidió el camino caliente. Llamado best-effort por
+    // FailoverSessionStore; si la fila ya existe (reintento), actualiza LastSeenAt.
+    public async Task CreateMirrorAsync(UserSession session, CancellationToken cancellationToken)
     {
-        var session = await _context.Sessions.FirstOrDefaultAsync(s => s.SessionId == sessionId, cancellationToken);
+        var existing = await _context.Sessions.FirstOrDefaultAsync(s => s.SessionId == session.SessionId, cancellationToken);
+        if (existing is null)
+            _context.Sessions.Add(session);
+        else
+            existing.Touch(session.LastSeenAt);
+
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public Task<UserSession?> FindAsync(long userId, Guid sessionId, CancellationToken cancellationToken) =>
+        _context.Sessions.FirstOrDefaultAsync(s => s.SessionId == sessionId && s.UserId == userId, cancellationToken);
+
+    public async Task TouchAsync(long userId, Guid sessionId, CancellationToken cancellationToken)
+    {
+        var session = await FindAsync(userId, sessionId, cancellationToken);
         if (session is null)
             return;
 
@@ -45,9 +59,9 @@ public sealed class PostgresSessionFallbackStore : ISessionStore
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task RevokeAsync(Guid sessionId, CancellationToken cancellationToken)
+    public async Task RevokeAsync(long userId, Guid sessionId, CancellationToken cancellationToken)
     {
-        var session = await _context.Sessions.FirstOrDefaultAsync(s => s.SessionId == sessionId, cancellationToken);
+        var session = await FindAsync(userId, sessionId, cancellationToken);
         if (session is null)
             return;
 

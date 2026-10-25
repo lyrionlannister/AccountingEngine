@@ -59,4 +59,19 @@ public class UserSessionTests
 
         Assert.True(session.IsExpiredAt(Now.AddMinutes(31), TimeSpan.FromMinutes(30)));
     }
+
+    [Fact]
+    public void Reconstitute_PreservesTheGivenSessionId()
+    {
+        var sessionId = Guid.NewGuid();
+        var later = Now.AddMinutes(5);
+
+        var session = UserSession.Reconstitute(sessionId, userId: 1, "203.0.113.10", Now, later);
+
+        Assert.Equal(sessionId, session.SessionId);
+        Assert.Equal(1, session.UserId);
+        Assert.Equal("203.0.113.10", session.Ip);
+        Assert.Equal(Now, session.CreatedAt);
+        Assert.Equal(later, session.LastSeenAt);
+    }
 }

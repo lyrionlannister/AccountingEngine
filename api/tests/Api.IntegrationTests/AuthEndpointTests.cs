@@ -103,4 +103,31 @@ public sealed class AuthEndpointTests : IClassFixture<AuthApiFactory>
 
         Assert.Equal(HttpStatusCode.TooManyRequests, last!.StatusCode);
     }
+
+    [Fact]
+    public async Task Login_11thAttemptForSameAccountFromDifferentIps_Returns429()
+    {
+        // El límite por IP (prueba anterior) no detiene esto: cada intento viene de una IP
+        // nueva. El límite por cuenta (LoginAccountRateLimiter) es el que debe frenarlo.
+        const string email = "rate-limited-distributed@acme.test";
+        await RegisterUserAsync(email, "s3cret-password");
+        using var client = _factory.CreateClient();
+
+        HttpResponseMessage? last = null;
+        for (var attempt = 0; attempt < 11; attempt++)
+            last = await client.SendAsync(LoginRequestFrom(email, "wrong-password", $"203.0.114.{attempt}"));
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, last!.StatusCode);
+    }
+
+    [Fact]
+    public async Task Login_WithMissingEmail_Returns400()
+    {
+        using var client = _factory.CreateClient();
+
+        var response = await client.PostAsync("/api/auth/login",
+            JsonContent.Create(new { Password = "s3cret-password" }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

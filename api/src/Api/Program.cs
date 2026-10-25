@@ -19,6 +19,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 var jwtSigningKey = builder.Configuration["Jwt:SigningKey"]
     ?? throw new InvalidOperationException("Missing configuration 'Jwt:SigningKey'.");
+var jwtSigningKeyBytes = Convert.FromBase64String(jwtSigningKey);
+if (jwtSigningKeyBytes.Length < 32)
+    throw new InvalidOperationException("'Jwt:SigningKey' must decode to at least 32 bytes (256 bits) for HS256.");
 
 builder.Services.AddOpenApi();
 builder.Services.AddUsersModule(builder.Configuration);
@@ -27,6 +30,7 @@ builder.Services.AddAccountingModule(builder.Configuration);
 builder.Services.AddAuthModule(builder.Configuration);
 
 builder.Services.AddSingleton<JwtTokenIssuer>();
+builder.Services.AddSingleton<Api.RateLimiting.LoginAccountRateLimiter>();
 builder.Services.AddScoped<ISessionExpiryNotifier, SignalRSessionExpiryNotifier>();
 
 builder.Services
@@ -39,11 +43,13 @@ builder.Services
         options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidIssuer = JwtTokenIssuer.Issuer,
+            ValidateAudience = true,
+            ValidAudience = JwtTokenIssuer.Audience,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(jwtSigningKey))
+            IssuerSigningKey = new SymmetricSecurityKey(jwtSigningKeyBytes)
         };
 
         // El WebSocket nativo del navegador no puede mandar el header Authorization —
@@ -92,9 +98,10 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    // Confía solo en la red dedicada de compose.yaml (nginx), no en el rango por defecto de
-    // Docker — ver tasks/plan-auth.md.
-    options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(IPAddress.Parse("172.28.0.0"), 24));
+    // Confía solo en la IP fija de nginx (compose.yaml), no en todo el subnet compartido —
+    // ese /24 también incluye postgres/redis/api, y cualquiera de ellos podría falsificar
+    // X-Forwarded-For si se confiara en la red entera en vez de en el único proxy real.
+    options.KnownProxies.Add(IPAddress.Parse("172.28.0.10"));
 });
 
 var app = builder.Build();

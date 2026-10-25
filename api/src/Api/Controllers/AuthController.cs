@@ -1,5 +1,7 @@
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Api.RateLimiting;
 using Api.Security;
 using Auth.DTOs;
 using Auth.Services;
@@ -17,15 +19,19 @@ public sealed class AuthController : ControllerBase
     private readonly LoginService _login;
     private readonly LogoutService _logout;
     private readonly JwtTokenIssuer _tokens;
+    private readonly LoginAccountRateLimiter _accountRateLimiter;
 
-    public AuthController(LoginService login, LogoutService logout, JwtTokenIssuer tokens)
+    public AuthController(LoginService login, LogoutService logout, JwtTokenIssuer tokens, LoginAccountRateLimiter accountRateLimiter)
     {
         _login = login;
         _logout = logout;
         _tokens = tokens;
+        _accountRateLimiter = accountRateLimiter;
     }
 
-    public sealed record LoginBody(string Email, string Password);
+    public sealed record LoginBody(
+        [Required(ErrorMessage = "El correo es obligatorio.")] string Email,
+        [Required(ErrorMessage = "La contraseña es obligatoria.")] string Password);
 
     public sealed record LoginResponse(string AccessToken, IReadOnlyList<MembershipSummary> Memberships);
 
@@ -34,6 +40,14 @@ public sealed class AuthController : ControllerBase
     [EnableRateLimiting("login")]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginBody body, CancellationToken cancellationToken)
     {
+        // Límite por IP (atributo arriba) y por cuenta (aquí): sin el segundo, muchas IPs
+        // distintas podían intentar fuerza bruta sin tope contra una sola cuenta.
+        if (!_accountRateLimiter.TryAcquire(body.Email))
+            return Problem(
+                statusCode: StatusCodes.Status429TooManyRequests,
+                title: "Demasiados intentos",
+                detail: "Demasiados intentos de inicio de sesión para esta cuenta. Intenta de nuevo más tarde.");
+
         // Corregida por ForwardedHeadersMiddleware (ver Program.cs) — nunca la IP interna de nginx.
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString()
             ?? throw new InvalidOperationException("Request has no RemoteIpAddress.");

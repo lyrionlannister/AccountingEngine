@@ -21,8 +21,24 @@ public sealed class AuthExceptionHandler(ILogger<AuthExceptionHandler> logger) :
             _ => (StatusCodes.Status500InternalServerError, "Error interno", (string?)null)
         };
 
-        if (status == StatusCodes.Status500InternalServerError)
-            logger.LogError(exception, "Excepción no mapeada en {Path}", httpContext.Request.Path);
+        // Auditoría de seguridad (CLAUDE.md §14): sin esto, intentos de login fallidos y
+        // conflictos de sesión no dejaban rastro — ni para detectar credential stuffing ni
+        // para alertar sobre un posible secuestro de cuenta. Nunca se registra la contraseña.
+        switch (exception)
+        {
+            case InvalidCredentialsException:
+                logger.LogWarning(
+                    "Intento de login fallido desde {RemoteIp}", httpContext.Connection.RemoteIpAddress);
+                break;
+            case SessionConflictException conflict:
+                logger.LogWarning(
+                    "Login rechazado por conflicto de sesión: usuario {UserId} ya tiene sesión activa, IP rechazada {RejectedIp}",
+                    conflict.UserId, conflict.RejectedIp);
+                break;
+            default:
+                logger.LogError(exception, "Excepción no mapeada en {Path}", httpContext.Request.Path);
+                break;
+        }
 
         httpContext.Response.StatusCode = status;
         await httpContext.Response.WriteAsJsonAsync(new ProblemDetails

@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Auth\Domain\Auth.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Auth\Auth.csproj" />
   </ItemGroup>
 
 </Project>

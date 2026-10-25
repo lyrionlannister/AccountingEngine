@@ -23,6 +23,11 @@ public sealed class JournalEntryRepository : IJournalEntryRepository
             .Include(e => e.Lines)
             .FirstOrDefaultAsync(e => e.CompanyId == companyId && e.SourceModule == sourceModule && e.SourceReference == sourceReference, cancellationToken);
 
+    public Task<bool> HasDraftEntriesAsync(long companyId, long accountingPeriodId, CancellationToken cancellationToken) =>
+        _context.JournalEntries.AnyAsync(
+            e => e.CompanyId == companyId && e.AccountingPeriodId == accountingPeriodId && e.Status == JournalEntryStatus.Draft,
+            cancellationToken);
+
     public async Task AddAsync(JournalEntry entry, CancellationToken cancellationToken)
     {
         await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);

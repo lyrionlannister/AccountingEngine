@@ -66,7 +66,10 @@ public sealed class JournalEntryConcurrencyTests : IAsyncLifetime
         var service = new PostJournalEntryService(
             new JournalEntryRepository(context),
             new AccountingPeriodRepository(context),
-            new VoucherTypeRepository(context));
+            new VoucherTypeRepository(context),
+            new AccountRepository(context),
+            new CostCenterRepository(context),
+            new PartyRepository(context));
 
         try
         {
@@ -119,7 +122,7 @@ public sealed class JournalEntryConcurrencyTests : IAsyncLifetime
         var closeTask = Task.Run(async () =>
         {
             using var context = db.NewContext();
-            var service = new CloseAccountingPeriodService(new AccountingPeriodRepository(context));
+            var service = new CloseAccountingPeriodService(new AccountingPeriodRepository(context), new JournalEntryRepository(context));
             await service.CloseAsync(new CloseAccountingPeriodRequest(CompanyId, fixture.PeriodId, "closer"), CancellationToken.None);
         });
 

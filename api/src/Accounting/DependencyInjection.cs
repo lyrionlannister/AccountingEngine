@@ -37,6 +37,9 @@ public static class DependencyInjection
         services.AddScoped<IVoucherTypeRepository, VoucherTypeRepository>();
         services.AddScoped<IPeriodReopenRequestRepository, PeriodReopenRequestRepository>();
         services.AddScoped<IAccountBalanceSnapshotRepository, AccountBalanceSnapshotRepository>();
+        services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<ICostCenterRepository, CostCenterRepository>();
+        services.AddScoped<IPartyRepository, PartyRepository>();
 
         services.AddScoped<PostJournalEntryService>();
         services.AddScoped<ReverseJournalEntryService>();

@@ -33,17 +33,36 @@ public sealed class RedisSessionExpiryListener : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var subscriber = _connection.GetSubscriber();
-        await subscriber.SubscribeAsync(RedisChannel.Literal("__keyevent@0__:expired"), (channel, value) =>
-            HandleExpiredKeyBoundedAsync(value.ToString(), stoppingToken));
+        // Un BackgroundService sin manejar sus propias excepciones tira todo el host abajo
+        // (.NET 8+, BackgroundServiceExceptionBehavior.StopHost por defecto) — si Redis está
+        // caído al arrancar o se cae después, SubscribeAsync lanza y esto anulaba el mismo
+        // failover que FailoverSessionStore ya implementa para el resto del módulo. Reintenta
+        // con backoff en vez de dejar que la excepción escape de ExecuteAsync.
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                var subscriber = _connection.GetSubscriber();
+                await subscriber.SubscribeAsync(RedisChannel.Literal("__keyevent@0__:expired"), (channel, value) =>
+                    HandleExpiredKeyBoundedAsync(value.ToString(), stoppingToken));
 
-        try
-        {
-            await Task.Delay(Timeout.Infinite, stoppingToken);
-        }
-        catch (OperationCanceledException)
-        {
-            // Apagado normal del host.
+                await Task.Delay(Timeout.Infinite, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Apagado normal del host.
+            }
+            catch (RedisException ex)
+            {
+                _logger.LogWarning(ex, "No se pudo suscribir a la expiración de sesiones en Redis; reintentando.");
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                }
+            }
         }
     }
 

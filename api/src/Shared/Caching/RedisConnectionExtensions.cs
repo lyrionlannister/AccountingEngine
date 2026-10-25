@@ -15,8 +15,15 @@ public static class RedisConnectionExtensions
         var connectionString = configuration.GetConnectionString("Redis")
             ?? throw new InvalidOperationException("Missing connection string 'Redis'.");
 
+        // AbortOnConnectFail=false: si Redis no responde al arrancar, el host debe seguir
+        // arriba igual (FailoverSessionStore ya atrapa RedisException por-llamada y cae a
+        // Postgres) — con el default (true), Connect() lanza aquí mismo y el proceso entero
+        // nunca llega a arrancar, lo que anula el propósito del failover.
+        var options = ConfigurationOptions.Parse(connectionString);
+        options.AbortOnConnectFail = false;
+
         // TryAdd: si más de un módulo llama esto, la conexión se crea una sola vez.
-        services.TryAddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(connectionString));
+        services.TryAddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(options));
 
         return services;
     }

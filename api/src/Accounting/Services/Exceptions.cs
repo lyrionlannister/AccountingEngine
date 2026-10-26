@@ -69,6 +69,17 @@ public sealed class JournalEntryIdempotencyConflictException : Exception
     }
 }
 
+public sealed class JournalEntryAlreadyReversedException : Exception
+{
+    public long JournalEntryId { get; }
+
+    public JournalEntryAlreadyReversedException(long journalEntryId)
+        : base($"Journal entry {journalEntryId} was already reversed.")
+    {
+        JournalEntryId = journalEntryId;
+    }
+}
+
 public sealed class JournalEntrySequenceConflictException : Exception
 {
     public long CompanyId { get; }

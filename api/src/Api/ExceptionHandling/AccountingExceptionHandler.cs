@@ -44,6 +44,10 @@ public sealed class AccountingExceptionHandler(ILogger<AccountingExceptionHandle
                 StatusCodes.Status409Conflict,
                 "Conflicto de numeración",
                 "El número de secuencia ya está en uso para este tipo de comprobante."),
+            JournalEntryAlreadyReversedException => (
+                StatusCodes.Status409Conflict,
+                "El asiento ya fue revertido",
+                "Este asiento contable ya tiene una reversión registrada; no se puede revertir dos veces."),
             _ => ((int?)null, (string?)null, (string?)null)
         };
 

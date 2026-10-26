@@ -91,6 +91,14 @@ public sealed class JournalEntryRepository : IJournalEntryRepository
         {
             throw new JournalEntrySequenceConflictException(entry.CompanyId, entry.VoucherTypeId, entry.SequenceNumber!.Value);
         }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException
+        {
+            SqlState: PostgresErrorCodes.UniqueViolation,
+            ConstraintName: "ix_asientos_contables_reversion_unica"
+        })
+        {
+            throw new JournalEntryAlreadyReversedException(entry.ReversalOfEntryId!.Value);
+        }
     }
 
     private async Task LockAndRequirePeriodOpenAsync(long companyId, long accountingPeriodId, CancellationToken cancellationToken)

@@ -483,7 +483,10 @@ namespace Accounting.Persistence.Migrations
                     b.HasIndex("PublicId")
                         .IsUnique();
 
-                    b.HasIndex("ReversalOfEntryId");
+                    b.HasIndex("ReversalOfEntryId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_asientos_contables_reversion_unica")
+                        .HasFilter("asiento_revertido_id IS NOT NULL");
 
                     b.HasIndex("VoucherTypeId");
 
@@ -493,7 +496,7 @@ namespace Accounting.Persistence.Migrations
                     b.HasIndex("CompanyId", "SourceModule", "SourceReference")
                         .IsUnique()
                         .HasDatabaseName("ix_asientos_contables_idempotencia_origen")
-                        .HasFilter("referencia_origen IS NOT NULL");
+                        .HasFilter("referencia_origen IS NOT NULL AND asiento_revertido_id IS NULL");
 
                     b.HasIndex("CompanyId", "VoucherTypeId", "SequenceNumber")
                         .IsUnique()

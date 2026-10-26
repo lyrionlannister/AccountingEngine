@@ -325,4 +325,47 @@ public sealed class JournalEntriesEndpointTests : IClassFixture<AccountingApiFac
         var reversed = await response.Content.ReadFromJsonAsync<JournalEntryResult>();
         Assert.NotEqual(postedResult.PublicId, reversed!.PublicId);
     }
+
+    [Fact]
+    public async Task Reverse_EntryWithSourceReference_Returns201_DoesNotCollideWithOriginalsIdempotencyKey()
+    {
+        using var client = _factory.CreateClient();
+        var fixture = await SeedAsync(client, "reverse-sourced");
+
+        var posted = await client.SendAsync(PostEntryRequest(fixture, ValidBody(fixture, "invoicing", "INV-1")));
+        var postedResult = await posted.Content.ReadFromJsonAsync<JournalEntryResult>();
+
+        var reverseBody = new { EntryDate = new DateOnly(2026, 1, 16), Description = "Reversal of INV-1" };
+        var reverseRequest = Authorized(new HttpRequestMessage(
+            HttpMethod.Post, $"/api/companies/{fixture.CompanyPublicId}/journal-entries/{postedResult!.PublicId}/reversal")
+        {
+            Content = JsonContent.Create(reverseBody)
+        }, fixture.Jwt);
+
+        var response = await client.SendAsync(reverseRequest);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Reverse_SameEntryTwice_SecondCallReturnsConflict()
+    {
+        using var client = _factory.CreateClient();
+        var fixture = await SeedAsync(client, "reverse-twice");
+
+        var posted = await client.SendAsync(PostEntryRequest(fixture, ValidBody(fixture)));
+        var postedResult = await posted.Content.ReadFromJsonAsync<JournalEntryResult>();
+
+        HttpRequestMessage ReverseRequest(DateOnly date) => Authorized(new HttpRequestMessage(
+            HttpMethod.Post, $"/api/companies/{fixture.CompanyPublicId}/journal-entries/{postedResult!.PublicId}/reversal")
+        {
+            Content = JsonContent.Create(new { EntryDate = date, Description = "Reversal" })
+        }, fixture.Jwt);
+
+        var first = await client.SendAsync(ReverseRequest(new DateOnly(2026, 1, 16)));
+        Assert.Equal(HttpStatusCode.Created, first.StatusCode);
+
+        var second = await client.SendAsync(ReverseRequest(new DateOnly(2026, 1, 17)));
+        Assert.Equal(HttpStatusCode.Conflict, second.StatusCode);
+    }
 }

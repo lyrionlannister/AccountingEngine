@@ -63,9 +63,21 @@ public sealed class JournalEntryConfiguration : IEntityTypeConfiguration<Journal
             .HasDatabaseName("ix_asientos_contables_empresa_comprobante_secuencia");
         builder.HasIndex(e => new { e.CompanyId, e.AccountingPeriodId, e.Status })
             .HasDatabaseName("ix_asientos_contables_empresa_periodo_estado");
+        // "AND asiento_revertido_id IS NULL": una reversión hereda a propósito el mismo
+        // SourceModule/SourceReference del original (para poder consultar "todo lo relacionado
+        // con el evento X" incluida su corrección) — sin esta exclusión, insertarla siempre
+        // chocaba contra la fila del propio original y Reverse() quedaba permanentemente roto
+        // para cualquier asiento con SourceReference no nulo (hallazgo de auditoría).
         builder.HasIndex(e => new { e.CompanyId, e.SourceModule, e.SourceReference })
             .IsUnique()
             .HasDatabaseName("ix_asientos_contables_idempotencia_origen")
-            .HasFilter("referencia_origen IS NOT NULL");
+            .HasFilter("referencia_origen IS NOT NULL AND asiento_revertido_id IS NULL");
+
+        // Garantía real (no solo de aplicación) de que un asiento contabilizado se revierte una
+        // sola vez — ReverseJournalEntryService no tenía ningún chequeo contra esto antes.
+        builder.HasIndex(e => e.ReversalOfEntryId)
+            .IsUnique()
+            .HasDatabaseName("ix_asientos_contables_reversion_unica")
+            .HasFilter("asiento_revertido_id IS NOT NULL");
     }
 }

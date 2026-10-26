@@ -21,7 +21,7 @@ public class RecalculateAccountBalanceSnapshotServiceTests
     {
         var periods = PeriodsWithOnePeriod();
         var snapshots = new FakeAccountBalanceSnapshotRepository { NextSum = (300m, 300m) };
-        var service = new RecalculateAccountBalanceSnapshotService(periods, snapshots, new FakeAuditTrailWriter());
+        var service = new RecalculateAccountBalanceSnapshotService(periods, snapshots, new FakeAuditTrailWriter(), new FakeCurrentCompanyContext());
 
         var result = await service.RecalculateAsync(
             new RecalculateAccountBalanceSnapshotRequest(CompanyId, AccountingPeriodId: 0, AccountId: 5, TriggeredBy: "tester"),
@@ -40,7 +40,7 @@ public class RecalculateAccountBalanceSnapshotServiceTests
         var existing = AccountBalanceSnapshot.Create(CompanyId, 0, 5, 50m, 50m, DateTimeOffset.UtcNow.AddDays(-1));
         snapshots.Snapshots.Add(existing);
 
-        var service = new RecalculateAccountBalanceSnapshotService(periods, snapshots, new FakeAuditTrailWriter());
+        var service = new RecalculateAccountBalanceSnapshotService(periods, snapshots, new FakeAuditTrailWriter(), new FakeCurrentCompanyContext());
 
         var result = await service.RecalculateAsync(
             new RecalculateAccountBalanceSnapshotRequest(CompanyId, AccountingPeriodId: 0, AccountId: 5, TriggeredBy: "tester"),
@@ -58,7 +58,7 @@ public class RecalculateAccountBalanceSnapshotServiceTests
         var periods = PeriodsWithOnePeriod();
         var snapshots = new FakeAccountBalanceSnapshotRepository { NextSum = (100m, 100m) };
         var auditTrail = new FakeAuditTrailWriter();
-        var service = new RecalculateAccountBalanceSnapshotService(periods, snapshots, auditTrail);
+        var service = new RecalculateAccountBalanceSnapshotService(periods, snapshots, auditTrail, new FakeCurrentCompanyContext());
         var request = new RecalculateAccountBalanceSnapshotRequest(CompanyId, AccountingPeriodId: 0, AccountId: 5, TriggeredBy: "tester");
 
         await service.RecalculateAsync(request, CancellationToken.None);

@@ -12,7 +12,7 @@ public sealed class CostCenterRepository : ICostCenterRepository
     public CostCenterRepository(AppDbContext context) => _context = context;
 
     public async Task<IReadOnlyList<CostCenter>> FindManyByIdAsync(long companyId, IReadOnlyCollection<long> ids, CancellationToken cancellationToken) =>
-        await _context.CostCenters.Where(c => c.CompanyId == companyId && ids.Contains(c.Id)).ToListAsync(cancellationToken);
+        await _context.CostCenters.AsNoTracking().Where(c => c.CompanyId == companyId && ids.Contains(c.Id)).ToListAsync(cancellationToken);
 
     public Task<CostCenter?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
         _context.CostCenters.AsNoTracking().FirstOrDefaultAsync(c => c.CompanyId == companyId && c.PublicId == publicId, cancellationToken);

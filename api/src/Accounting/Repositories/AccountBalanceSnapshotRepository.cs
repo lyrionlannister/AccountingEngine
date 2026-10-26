@@ -12,9 +12,9 @@ public sealed class AccountBalanceSnapshotRepository : IAccountBalanceSnapshotRe
 
     public AccountBalanceSnapshotRepository(AppDbContext context) => _context = context;
 
-    public Task<AccountBalanceSnapshot?> FindByIdAsync(long accountingPeriodId, long accountId, CancellationToken cancellationToken) =>
+    public Task<AccountBalanceSnapshot?> FindByIdAsync(long companyId, long accountingPeriodId, long accountId, CancellationToken cancellationToken) =>
         _context.AccountBalanceSnapshots
-            .FirstOrDefaultAsync(s => s.AccountingPeriodId == accountingPeriodId && s.AccountId == accountId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.CompanyId == companyId && s.AccountingPeriodId == accountingPeriodId && s.AccountId == accountId, cancellationToken);
 
     public async Task<(decimal DebitTotal, decimal CreditTotal)> SumPostedLinesAsync(long companyId, long accountingPeriodId, long accountId, CancellationToken cancellationToken)
     {

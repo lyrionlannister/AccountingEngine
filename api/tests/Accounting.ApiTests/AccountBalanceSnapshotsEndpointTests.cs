@@ -33,6 +33,7 @@ public sealed class AccountBalanceSnapshotsEndpointTests : IClassFixture<Account
     private sealed class FixedCompanyContext(long companyId) : Shared.ICurrentCompanyContext
     {
         public long CompanyId => companyId;
+        public string Role => "Admin";
     }
 
     private async Task<Fixture> SeedAsync(HttpClient client, string suffix)

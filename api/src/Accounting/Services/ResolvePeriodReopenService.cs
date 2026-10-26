@@ -1,5 +1,6 @@
 using Accounting.Domain.Enums;
 using Accounting.DTOs;
+using Shared;
 
 namespace Accounting.Services;
 
@@ -8,18 +9,27 @@ public sealed class ResolvePeriodReopenService
     private readonly IPeriodReopenRequestRepository _reopenRequests;
     private readonly IAccountingPeriodRepository _periods;
     private readonly IAuditTrailWriter _auditTrail;
+    private readonly ICurrentCompanyContext _currentCompany;
 
-    public ResolvePeriodReopenService(IPeriodReopenRequestRepository reopenRequests, IAccountingPeriodRepository periods, IAuditTrailWriter auditTrail)
+    public ResolvePeriodReopenService(
+        IPeriodReopenRequestRepository reopenRequests, IAccountingPeriodRepository periods, IAuditTrailWriter auditTrail, ICurrentCompanyContext currentCompany)
     {
         _reopenRequests = reopenRequests;
         _periods = periods;
         _auditTrail = auditTrail;
+        _currentCompany = currentCompany;
     }
 
     public async Task<PeriodReopenRequestResult> ResolveAsync(ResolvePeriodReopenRequest request, CancellationToken cancellationToken)
     {
+        RoleGuard.Require(_currentCompany.Role, "Admin");
+
         var reopenRequest = await _reopenRequests.FindByIdAsync(request.CompanyId, request.PeriodReopenRequestId, cancellationToken)
             ?? throw new InvalidOperationException($"Period reopen request {request.PeriodReopenRequestId} not found.");
+
+        // Segregacion de funciones: ni un Admin puede aprobar/rechazar su propia solicitud.
+        if (string.Equals(reopenRequest.RequestedBy, request.ResolvedBy, StringComparison.Ordinal))
+            throw new SelfApprovalNotAllowedException();
 
         if (request.Approve)
         {

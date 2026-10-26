@@ -31,7 +31,7 @@ public class PostJournalEntryServiceTests
         SourceReference: sourceReference);
 
     private static (PostJournalEntryService Service, FakeJournalEntryRepository Entries, FakeAuditTrailWriter AuditTrail) CreateService(
-        PeriodStatus periodStatus, VoucherNumberingMode numberingMode, bool seedAccount = true, bool accountAllowsPosting = true)
+        PeriodStatus periodStatus, VoucherNumberingMode numberingMode, bool seedAccount = true, bool accountAllowsPosting = true, string role = "Admin")
     {
         var entries = new FakeJournalEntryRepository();
         var periods = new FakeAccountingPeriodRepository();
@@ -49,7 +49,8 @@ public class PostJournalEntryServiceTests
             accounts.Accounts.Add(Account.Create(CompanyId, "1000", "Cash", AccountNature.Debit, AccountType.Asset, null, accountAllowsPosting));
 
         return (new PostJournalEntryService(
-            entries, periods, voucherTypes, accounts, new FakeCostCenterRepository(), new FakePartyRepository(), auditTrail), entries, auditTrail);
+            entries, periods, voucherTypes, accounts, new FakeCostCenterRepository(), new FakePartyRepository(), auditTrail,
+            new FakeCurrentCompanyContext(CompanyId, role)), entries, auditTrail);
     }
 
     [Fact]
@@ -118,5 +119,13 @@ public class PostJournalEntryServiceTests
         Assert.Equal("tester", record.Actor);
         Assert.IsType<JournalEntry>(record.AuditedEntity);
         Assert.Equal(result.PublicId, ((JournalEntry)record.AuditedEntity).PublicId);
+    }
+
+    [Fact]
+    public async Task PostAsync_AsViewer_ThrowsInsufficientRole()
+    {
+        var (service, _, _) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic, role: "Viewer");
+
+        await Assert.ThrowsAsync<InsufficientRoleException>(() => service.PostAsync(BuildRequest(), CancellationToken.None));
     }
 }

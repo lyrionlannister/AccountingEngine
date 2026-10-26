@@ -1,8 +1,15 @@
 using Accounting.Domain;
 using Accounting.Domain.Enums;
 using Accounting.Services;
+using Shared;
 
 namespace Accounting.Tests;
+
+internal sealed class FakeCurrentCompanyContext(long companyId = 1, string role = "Admin") : ICurrentCompanyContext
+{
+    public long CompanyId => companyId;
+    public string Role => role;
+}
 
 internal sealed class FakeJournalEntryRepository : IJournalEntryRepository
 {
@@ -53,6 +60,15 @@ internal sealed class FakeAccountingPeriodRepository : IAccountingPeriodReposito
         Task.FromResult(Periods.FirstOrDefault(p => p.CompanyId == companyId && p.PublicId == publicId));
 
     public Task UpdateAsync(AccountingPeriod period, CancellationToken cancellationToken) => Task.CompletedTask;
+
+    public async Task<AccountingPeriod> CloseAsync(
+        long companyId, long accountingPeriodId, Func<AccountingPeriod, CancellationToken, Task> closeAction, CancellationToken cancellationToken)
+    {
+        var period = Periods.FirstOrDefault(p => p.CompanyId == companyId && p.Id == accountingPeriodId)
+            ?? throw new InvalidOperationException($"Accounting period {accountingPeriodId} not found.");
+        await closeAction(period, cancellationToken);
+        return period;
+    }
 }
 
 internal sealed class FakeVoucherTypeRepository : IVoucherTypeRepository
@@ -159,8 +175,8 @@ internal sealed class FakeAccountBalanceSnapshotRepository : IAccountBalanceSnap
     public List<AccountBalanceSnapshot> Snapshots { get; } = new();
     public (decimal DebitTotal, decimal CreditTotal) NextSum { get; set; }
 
-    public Task<AccountBalanceSnapshot?> FindByIdAsync(long accountingPeriodId, long accountId, CancellationToken cancellationToken) =>
-        Task.FromResult(Snapshots.FirstOrDefault(s => s.AccountingPeriodId == accountingPeriodId && s.AccountId == accountId));
+    public Task<AccountBalanceSnapshot?> FindByIdAsync(long companyId, long accountingPeriodId, long accountId, CancellationToken cancellationToken) =>
+        Task.FromResult(Snapshots.FirstOrDefault(s => s.CompanyId == companyId && s.AccountingPeriodId == accountingPeriodId && s.AccountId == accountId));
 
     public Task<(decimal DebitTotal, decimal CreditTotal)> SumPostedLinesAsync(long companyId, long accountingPeriodId, long accountId, CancellationToken cancellationToken) =>
         Task.FromResult(NextSum);

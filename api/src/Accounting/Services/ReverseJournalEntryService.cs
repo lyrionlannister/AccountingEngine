@@ -1,5 +1,6 @@
 using Accounting.Domain.Enums;
 using Accounting.DTOs;
+using Shared;
 
 namespace Accounting.Services;
 
@@ -9,21 +10,26 @@ public sealed class ReverseJournalEntryService
     private readonly IAccountingPeriodRepository _periods;
     private readonly IVoucherTypeRepository _voucherTypes;
     private readonly IAuditTrailWriter _auditTrail;
+    private readonly ICurrentCompanyContext _currentCompany;
 
     public ReverseJournalEntryService(
         IJournalEntryRepository journalEntries,
         IAccountingPeriodRepository periods,
         IVoucherTypeRepository voucherTypes,
-        IAuditTrailWriter auditTrail)
+        IAuditTrailWriter auditTrail,
+        ICurrentCompanyContext currentCompany)
     {
         _journalEntries = journalEntries;
         _periods = periods;
         _voucherTypes = voucherTypes;
         _auditTrail = auditTrail;
+        _currentCompany = currentCompany;
     }
 
     public async Task<JournalEntryResult> ReverseAsync(ReverseJournalEntryRequest request, CancellationToken cancellationToken)
     {
+        RoleGuard.Require(_currentCompany.Role, "Admin", "Accountant");
+
         var original = await _journalEntries.FindByIdAsync(request.CompanyId, request.JournalEntryId, cancellationToken)
             ?? throw new InvalidOperationException($"Journal entry {request.JournalEntryId} not found.");
 

@@ -69,6 +69,53 @@ public sealed class JournalEntryIdempotencyConflictException : Exception
     }
 }
 
+// Membership tiene rol (Admin/Accountant/Viewer) desde que existe, pero ningun caso de uso de
+// Accounting lo verificaba — un Viewer podia contabilizar, cerrar periodos y aprobar su propia
+// solicitud de reapertura (hallazgo de auditoria). RoleGuard centraliza el chequeo para no
+// repetir la logica de comparacion en cada Service.
+internal static class RoleGuard
+{
+    public static void Require(string currentRole, params string[] allowedRoles)
+    {
+        if (!allowedRoles.Contains(currentRole))
+            throw new InsufficientRoleException(currentRole, allowedRoles);
+    }
+}
+
+public sealed class InsufficientRoleException : Exception
+{
+    public string CurrentRole { get; }
+    public IReadOnlyList<string> AllowedRoles { get; }
+
+    public InsufficientRoleException(string currentRole, IReadOnlyList<string> allowedRoles)
+        : base($"Role '{currentRole}' is not allowed; requires one of: {string.Join(", ", allowedRoles)}.")
+    {
+        CurrentRole = currentRole;
+        AllowedRoles = allowedRoles;
+    }
+}
+
+// Segregacion de funciones: quien resuelve una solicitud de reapertura no puede ser quien la
+// pidio, sin importar su rol -- ni siquiera un Admin aprueba su propia solicitud.
+public sealed class SelfApprovalNotAllowedException : Exception
+{
+    public SelfApprovalNotAllowedException()
+        : base("A user cannot resolve their own period reopen request.")
+    {
+    }
+}
+
+public sealed class JournalEntryAlreadyReversedException : Exception
+{
+    public long JournalEntryId { get; }
+
+    public JournalEntryAlreadyReversedException(long journalEntryId)
+        : base($"Journal entry {journalEntryId} was already reversed.")
+    {
+        JournalEntryId = journalEntryId;
+    }
+}
+
 public sealed class JournalEntrySequenceConflictException : Exception
 {
     public long CompanyId { get; }

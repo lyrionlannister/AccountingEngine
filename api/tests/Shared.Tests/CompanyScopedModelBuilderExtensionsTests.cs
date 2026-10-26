@@ -26,6 +26,7 @@ public sealed class UnscopedThing
 public sealed class FakeCurrentCompanyContext(long companyId) : ICurrentCompanyContext
 {
     public long CompanyId => companyId;
+    public string Role => "Admin";
 }
 
 public sealed class TestDbContext(DbContextOptions<TestDbContext> options, ICurrentCompanyContext currentCompany)

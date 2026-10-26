@@ -1,4 +1,5 @@
 using Accounting.Domain;
+using Accounting.Domain.Enums;
 using Accounting.DTOs;
 
 namespace Accounting.Services;
@@ -7,11 +8,13 @@ public sealed class RequestPeriodReopenService
 {
     private readonly IAccountingPeriodRepository _periods;
     private readonly IPeriodReopenRequestRepository _reopenRequests;
+    private readonly IAuditTrailWriter _auditTrail;
 
-    public RequestPeriodReopenService(IAccountingPeriodRepository periods, IPeriodReopenRequestRepository reopenRequests)
+    public RequestPeriodReopenService(IAccountingPeriodRepository periods, IPeriodReopenRequestRepository reopenRequests, IAuditTrailWriter auditTrail)
     {
         _periods = periods;
         _reopenRequests = reopenRequests;
+        _auditTrail = auditTrail;
     }
 
     public async Task<PeriodReopenRequestResult> RequestAsync(RequestPeriodReopenRequest request, CancellationToken cancellationToken)
@@ -22,6 +25,7 @@ public sealed class RequestPeriodReopenService
             throw new InvalidOperationException("Only a closed period can have a reopen request.");
 
         var reopenRequest = PeriodReopenRequest.Create(request.CompanyId, request.AccountingPeriodId, request.Reason, request.RequestedBy, DateTimeOffset.UtcNow);
+        _auditTrail.Record(AuditOperation.PeriodReopenRequested, request.CompanyId, request.RequestedBy, reopenRequest, DateTimeOffset.UtcNow);
         await _reopenRequests.AddAsync(reopenRequest, cancellationToken);
 
         return ToResult(reopenRequest);

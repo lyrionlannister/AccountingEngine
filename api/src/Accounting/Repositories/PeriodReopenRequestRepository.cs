@@ -25,4 +25,11 @@ public sealed class PeriodReopenRequestRepository : IPeriodReopenRequestReposito
 
     public async Task UpdateAsync(PeriodReopenRequest request, CancellationToken cancellationToken) =>
         await _context.SaveChangesAsync(cancellationToken);
+
+    public async Task SaveResolutionAsync(CancellationToken cancellationToken)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+    }
 }

@@ -122,7 +122,7 @@ public sealed class JournalEntryConcurrencyTests : IAsyncLifetime
         var closeTask = Task.Run(async () =>
         {
             using var context = db.NewContext();
-            var service = new CloseAccountingPeriodService(new AccountingPeriodRepository(context), new JournalEntryRepository(context));
+            var service = new CloseAccountingPeriodService(new AccountingPeriodRepository(context), new JournalEntryRepository(context), new AuditTrailWriter(context));
             await service.CloseAsync(new CloseAccountingPeriodRequest(CompanyId, fixture.PeriodId, "closer"), CancellationToken.None);
         });
 

@@ -10,9 +10,8 @@ namespace Api.IntegrationTests;
 
 public sealed class ApiTestEnvironment : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder().WithImage("postgres:18-alpine").Build();
-    private readonly RedisContainer _redis = new RedisBuilder()
-        .WithImage("redis:7-alpine")
+    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:18-alpine").Build();
+    private readonly RedisContainer _redis = new RedisBuilder("redis:7-alpine")
         .WithCommand("redis-server", "--notify-keyspace-events", "Ex")
         .Build();
 

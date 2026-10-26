@@ -12,7 +12,7 @@ public sealed class PartyRepository : IPartyRepository
     public PartyRepository(AppDbContext context) => _context = context;
 
     public async Task<IReadOnlyList<Party>> FindManyByIdAsync(long companyId, IReadOnlyCollection<long> ids, CancellationToken cancellationToken) =>
-        await _context.Parties.Where(p => p.CompanyId == companyId && ids.Contains(p.Id)).ToListAsync(cancellationToken);
+        await _context.Parties.AsNoTracking().Where(p => p.CompanyId == companyId && ids.Contains(p.Id)).ToListAsync(cancellationToken);
 
     public Task<Party?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
         _context.Parties.AsNoTracking().FirstOrDefaultAsync(p => p.CompanyId == companyId && p.PublicId == publicId, cancellationToken);

@@ -1,4 +1,5 @@
 using Accounting.Domain;
+using Accounting.Domain.Enums;
 using Accounting.DTOs;
 
 namespace Accounting.Services;
@@ -7,11 +8,13 @@ public sealed class RecalculateAccountBalanceSnapshotService
 {
     private readonly IAccountingPeriodRepository _periods;
     private readonly IAccountBalanceSnapshotRepository _snapshots;
+    private readonly IAuditTrailWriter _auditTrail;
 
-    public RecalculateAccountBalanceSnapshotService(IAccountingPeriodRepository periods, IAccountBalanceSnapshotRepository snapshots)
+    public RecalculateAccountBalanceSnapshotService(IAccountingPeriodRepository periods, IAccountBalanceSnapshotRepository snapshots, IAuditTrailWriter auditTrail)
     {
         _periods = periods;
         _snapshots = snapshots;
+        _auditTrail = auditTrail;
     }
 
     public async Task<AccountBalanceSnapshotResult> RecalculateAsync(RecalculateAccountBalanceSnapshotRequest request, CancellationToken cancellationToken)
@@ -27,11 +30,13 @@ public sealed class RecalculateAccountBalanceSnapshotService
         if (snapshot is null)
         {
             snapshot = AccountBalanceSnapshot.Create(request.CompanyId, request.AccountingPeriodId, request.AccountId, debitTotal, creditTotal, now);
+            _auditTrail.Record(AuditOperation.AccountBalanceRecalculated, request.CompanyId, request.TriggeredBy, snapshot, now);
             await _snapshots.AddAsync(snapshot, cancellationToken);
         }
         else
         {
             snapshot.Recalculate(debitTotal, creditTotal, now);
+            _auditTrail.Record(AuditOperation.AccountBalanceRecalculated, request.CompanyId, request.TriggeredBy, snapshot, now);
             await _snapshots.UpdateAsync(snapshot, cancellationToken);
         }
 

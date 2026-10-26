@@ -92,10 +92,10 @@ public sealed class AccountBalanceSnapshotReconciliationTests : IAsyncLifetime
         using var recalcContext = db.NewContext();
         var snapshots = new AccountBalanceSnapshotRepository(recalcContext);
         var periods = new AccountingPeriodRepository(recalcContext);
-        var recalcService = new RecalculateAccountBalanceSnapshotService(periods, snapshots);
+        var recalcService = new RecalculateAccountBalanceSnapshotService(periods, snapshots, new AuditTrailWriter(recalcContext));
 
         var result = await recalcService.RecalculateAsync(
-            new RecalculateAccountBalanceSnapshotRequest(CompanyId, periodId, cashAccountId),
+            new RecalculateAccountBalanceSnapshotRequest(CompanyId, periodId, cashAccountId, "tester"),
             CancellationToken.None);
 
         using var verifyContext = db.NewContext();

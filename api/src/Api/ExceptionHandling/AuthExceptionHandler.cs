@@ -4,9 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.ExceptionHandling;
 
-// Primer IExceptionHandler del proyecto — Auth es el primer módulo con Controllers reales.
-// Cubre a propósito solo las excepciones que Auth lanza hoy (CLAUDE.md §11: no revelar
-// información sensible); el catch-all nunca expone el tipo ni el mensaje interno de C#.
 public sealed class AuthExceptionHandler(ILogger<AuthExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
@@ -21,9 +18,6 @@ public sealed class AuthExceptionHandler(ILogger<AuthExceptionHandler> logger) :
             _ => (StatusCodes.Status500InternalServerError, "Error interno", (string?)null)
         };
 
-        // Auditoría de seguridad (CLAUDE.md §14): sin esto, intentos de login fallidos y
-        // conflictos de sesión no dejaban rastro — ni para detectar credential stuffing ni
-        // para alertar sobre un posible secuestro de cuenta. Nunca se registra la contraseña.
         switch (exception)
         {
             case InvalidCredentialsException:

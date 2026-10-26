@@ -4,18 +4,10 @@ using StackExchange.Redis;
 
 namespace Auth.Repositories;
 
-// Camino caliente: fuente de verdad mientras Redis responda (ver FailoverSessionStore y
-// tasks/plan-auth.md, Phase 2). Esquema de keys privado de este archivo:
-//   session:{userId}:{sessionId}   -> hash { ip, createdAt, lastSeenAt }, TTL deslizante
-//   user_sessions:{userId}         -> hash { sessionId -> ip }, usado para el chequeo de 1 IP
-// Ningún otro módulo (ni Auth.Services) conoce este esquema.
 public sealed class RedisSessionStore : ISessionStore
 {
     private static readonly TimeSpan SlidingWindow = UserSession.SlidingWindow;
 
-    // Chequeo de "1 IP por usuario" + escritura en un único round-trip atómico (EVAL): un
-    // read-then-write en dos pasos separados dejaba una ventana donde dos logins concurrentes
-    // desde IPs distintas podían ambos leer "sin conflicto" antes de que cualquiera escribiera.
     private const string CreateSessionScript = @"
 local idxKey = KEYS[1]
 local sessionKey = KEYS[2]

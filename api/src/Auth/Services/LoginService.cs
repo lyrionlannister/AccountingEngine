@@ -23,7 +23,6 @@ public sealed class LoginService
         if (userId is null)
             throw new InvalidCredentialsException();
 
-        // Puede lanzar SessionConflictException — se propaga tal cual, Api la mapea (Phase 4).
         var session = await _sessions.CreateAsync(userId.Value, request.Ip, cancellationToken);
 
         var memberships = await _memberships.ListActiveAsync(userId.Value, cancellationToken);

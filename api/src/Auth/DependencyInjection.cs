@@ -25,8 +25,6 @@ public static class DependencyInjection
         services.AddScoped<LoginService>();
         services.AddScoped<LogoutService>();
 
-        // Requiere que el composition root (Api) registre ISessionExpiryNotifier antes de
-        // construir el host — lo implementa vía SignalR (ver tasks/plan-auth.md, Phase 3).
         services.AddHostedService<RedisSessionExpiryListener>();
 
         return services;

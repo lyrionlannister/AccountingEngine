@@ -27,7 +27,6 @@ public sealed class ResolvePeriodReopenService
         var reopenRequest = await _reopenRequests.FindByIdAsync(request.CompanyId, request.PeriodReopenRequestId, cancellationToken)
             ?? throw new InvalidOperationException($"Period reopen request {request.PeriodReopenRequestId} not found.");
 
-        // Segregacion de funciones: ni un Admin puede aprobar/rechazar su propia solicitud.
         if (string.Equals(reopenRequest.RequestedBy, request.ResolvedBy, StringComparison.Ordinal))
             throw new SelfApprovalNotAllowedException();
 
@@ -46,9 +45,6 @@ public sealed class ResolvePeriodReopenService
 
         _auditTrail.Record(AuditOperation.PeriodReopenResolved, request.CompanyId, request.ResolvedBy, reopenRequest, DateTimeOffset.UtcNow, request.Notes);
 
-        // Un solo SaveChangesAsync (en transaccion explicita) para la solicitud, el periodo
-        // reabierto si aplica, y la auditoria — antes eran 2 SaveChangesAsync separados
-        // (ver tasks/plan-auditoria.md, hallazgo de la seccion 2).
         await _reopenRequests.SaveResolutionAsync(cancellationToken);
 
         return RequestPeriodReopenService.ToResult(reopenRequest);

@@ -11,7 +11,6 @@ namespace Api.IntegrationTests;
 public sealed class ApiTestEnvironment : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder().WithImage("postgres:18-alpine").Build();
-    // --notify-keyspace-events Ex: requerido por RedisSessionExpiryListener (igual que compose.yaml).
     private readonly RedisContainer _redis = new RedisBuilder()
         .WithImage("redis:7-alpine")
         .WithCommand("redis-server", "--notify-keyspace-events", "Ex")
@@ -25,8 +24,6 @@ public sealed class ApiTestEnvironment : IAsyncLifetime
     {
         await Task.WhenAll(_postgres.StartAsync(), _redis.StartAsync());
 
-        // Program.cs no migra al arrancar (igual que el resto del proyecto) — se migra aquí,
-        // en el mismo orden de despliegue real: Companies -> Users -> Auth.
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(PostgresConnectionString);
         dataSourceBuilder.MapEnum<CompanyMembershipRole>("rol_membresia");
         var dataSource = dataSourceBuilder.Build();

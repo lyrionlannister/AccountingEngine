@@ -5,9 +5,6 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Api.Hubs;
 
-// Un solo grupo por UserId, resuelto del claim JWT al conectar — nunca de un parámetro que
-// el cliente pueda falsear. SignalRSessionExpiryNotifier solo envía a ese grupo, nunca
-// broadcast (ver tasks/plan-auth.md).
 [Authorize]
 public sealed class SessionHub : Hub
 {

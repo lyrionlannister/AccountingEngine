@@ -35,10 +35,6 @@ public sealed class UserRepository : IUserRepository
             ConstraintName: "ix_usuarios_correo_normalizado"
         })
         {
-            // El chequeo previo (ExistsByEmailAsync en RegisterUserService) no basta bajo
-            // concurrencia: dos registros con el mismo email pueden pasarlo ambos antes de que
-            // cualquiera inserte. El índice único es el backstop real (mismo patrón que
-            // JournalEntryRepository con el conflicto de idempotencia).
             throw new DuplicateEmailException(user.Email);
         }
     }

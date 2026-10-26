@@ -7,8 +7,6 @@ internal static class PasswordHasher
     private const int SaltSizeBytes = 16;
     private const int KeySizeBytes = 32;
 
-    // OWASP recomienda 600 000 iteraciones para PBKDF2-HMAC-SHA256 (vigente a la fecha de este módulo).
-    // El valor viaja dentro del propio hash, así que subir esta constante no invalida hashes ya emitidos.
     private const int Iterations = 600_000;
     private static readonly HashAlgorithmName Algorithm = HashAlgorithmName.SHA256;
 

@@ -8,10 +8,6 @@ public static class CompanyScopedModelBuilderExtensions
 {
     private const string CompanyIdPropertyName = "CompanyId";
 
-    // currentCompanyId debe leer una propiedad del propio DbContext (p. ej. ctx => ctx.CurrentCompanyId),
-    // nunca un objeto externo capturado: EF Core cachea el modelo compilado por tipo de DbContext, pero
-    // reconoce y revincula las referencias a "this" en cada ejecución de query, por eso el filtro sigue
-    // leyendo el valor correcto incluso con el modelo cacheado entre instancias.
     public static ModelBuilder ApplyCompanyScopeFilters<TContext>(
         this ModelBuilder modelBuilder,
         TContext dbContext,

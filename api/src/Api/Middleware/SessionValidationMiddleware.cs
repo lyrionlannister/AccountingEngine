@@ -4,9 +4,6 @@ using Auth.Services;
 
 namespace Api.Middleware;
 
-// Un JWT con firma válida no basta: su "sid" debe seguir existiendo en ISessionStore
-// (logout/expiración lo revocan). También refresca el TTL deslizante de la sesión en cada
-// request autenticado — ver tasks/plan-auth.md.
 public sealed class SessionValidationMiddleware
 {
     private readonly RequestDelegate _next;

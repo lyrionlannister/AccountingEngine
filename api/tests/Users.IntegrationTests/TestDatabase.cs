@@ -12,9 +12,6 @@ internal sealed class TestDatabase : IAsyncDisposable
 
     private TestDatabase(NpgsqlDataSource dataSource) => _dataSource = dataSource;
 
-    // Reproduce el orden real de despliegue: las migraciones de Companies (que crean la tabla
-    // "usuarios" e históricamente le agregaron sus FKs) corrieron antes de que Users existiera.
-    // InitialUsersSchema es un no-op a propósito — ver tasks/plan-users.md, "traspaso de ownership".
     public static async Task<TestDatabase> CreateAsync(string connectionString)
     {
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);

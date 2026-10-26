@@ -4,15 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Api.Security;
 
-// Único lugar del proyecto que construye un JWT — Auth.Services nunca referencia esta
-// librería (sigue siendo un detalle de transporte de Api, ver tasks/plan-auth.md).
 public sealed class JwtTokenIssuer
 {
-    // Mismo valor fijo usado en la validación (Program.cs) — un monolito con un solo emisor y
-    // un solo consumidor no necesita que sean configurables, pero validarlos explícitamente
-    // (en vez de ValidateIssuer/ValidateAudience = false) cierra la puerta a que un token
-    // firmado con la misma clave pero para otro propósito se acepte aquí si la clave se
-    // reutiliza alguna vez.
     public const string Issuer = "AccountingEngine.Api";
     public const string Audience = "AccountingEngine.Api";
 

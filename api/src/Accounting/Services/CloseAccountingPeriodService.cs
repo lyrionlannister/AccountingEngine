@@ -23,17 +23,10 @@ public sealed class CloseAccountingPeriodService
 
     public async Task<AccountingPeriodResult> CloseAsync(CloseAccountingPeriodRequest request, CancellationToken cancellationToken)
     {
-        // Cerrar un periodo es una operacion de mayor impacto que contabilizar/revertir --
-        // reservada a Admin (hallazgo de auditoria: ningun rol se validaba antes de esto).
         RoleGuard.Require(_currentCompany.Role, "Admin");
 
-        // El chequeo de borradores y el cierre corren DENTRO del lock de fila que CloseAsync
-        // toma sobre el periodo (FOR UPDATE) — sin esto, un Post concurrente podia colarse
-        // durante la ventana completa de esta decision, no solo durante el UPDATE final
-        // (hallazgo de auditoria, api/CLAUDE.md §5.4).
         var period = await _periods.CloseAsync(request.CompanyId, request.AccountingPeriodId, async (period, ct) =>
         {
-            // Ver AccountingPeriodHasDraftEntriesException: bloquea, no ignora (decisión documentada).
             if (await _journalEntries.HasDraftEntriesAsync(request.CompanyId, request.AccountingPeriodId, ct))
                 throw new AccountingPeriodHasDraftEntriesException(request.AccountingPeriodId);
 

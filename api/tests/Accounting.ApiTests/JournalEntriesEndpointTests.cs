@@ -159,11 +159,6 @@ public sealed class JournalEntriesEndpointTests : IClassFixture<AccountingApiFac
         Assert.Equal("Posted", result.Status);
     }
 
-    // El dominio lanza InvalidOperationException genérica (JournalEntry.Post), no un tipo
-    // dedicado — AccountingExceptionHandler (Task 15) no la mapea a propósito porque el mismo
-    // tipo también significa "período no encontrado" en otros Services; conflar ambos casos en
-    // un único código HTTP sería peor que el 500 genérico actual. Pendiente como limitación
-    // conocida en tasks/todo-accounting-api.md hasta que el dominio distinga ambos casos.
     [Fact]
     public async Task Post_UnbalancedEntry_Returns500()
     {
@@ -263,9 +258,6 @@ public sealed class JournalEntriesEndpointTests : IClassFixture<AccountingApiFac
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    // Regresión del fix de batch-resolution (ResolveLinesAsync): con 3 líneas y referencias
-    // distintas por línea, confirma que cada línea persiste con su propia cuenta/centro de
-    // costo/tercero — no que el batch por diccionario haya mezclado la línea 1 con la 3.
     [Fact]
     public async Task Post_WithMultipleLinesAndMixedReferences_ResolvesEachLineToItsOwnAccount()
     {

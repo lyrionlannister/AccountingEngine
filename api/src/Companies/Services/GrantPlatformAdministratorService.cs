@@ -3,9 +3,6 @@ using Companies.DTOs;
 
 namespace Companies.Services;
 
-// El primer PlatformAdministrator no puede nacer de este Service (requeriría ya ser
-// PlatformAdministrator para invocarlo). Se crea por seed de datos: ver
-// src/Companies/Persistence/seed-first-platform-administrator.sql.
 public sealed class GrantPlatformAdministratorService
 {
     private readonly IPlatformAdministratorRepository _administrators;

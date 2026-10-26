@@ -8,8 +8,6 @@ public sealed class AuditTrailEntryConfiguration : IEntityTypeConfiguration<Audi
 {
     public void Configure(EntityTypeBuilder<AuditTrailEntry> builder)
     {
-        // CHECK en vez de FK polimórfica (antipatrón prohibido por db-desing-conventions):
-        // cada columna es una FK real y nullable, exactamente una debe estar presente por fila.
         builder.ToTable("auditoria_contable", t =>
             t.HasCheckConstraint(
                 "ck_auditoria_contable_una_referencia",

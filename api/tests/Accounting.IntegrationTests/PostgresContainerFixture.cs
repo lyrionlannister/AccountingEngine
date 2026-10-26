@@ -11,10 +11,6 @@ public sealed class PostgresContainerFixture : IAsyncLifetime
 
     public Task InitializeAsync()
     {
-        // Leida por la migracion AddAppRoleAndRevokeAuditPrivileges (CREATE/ALTER ROLE
-        // motor_contable_app) — sin esto, CUALQUIER prueba que migre la base falla, no solo
-        // las que prueban privilegios. Fijada una vez por coleccion; paralelizacion deshabilitada
-        // en este ensamblado (AssemblyInfo.cs), no hay condicion de carrera.
         Environment.SetEnvironmentVariable("ACCOUNTING_APP_DB_PASSWORD", "test-app-role-password");
         return _container.StartAsync();
     }

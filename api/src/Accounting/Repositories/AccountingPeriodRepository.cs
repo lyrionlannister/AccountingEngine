@@ -25,8 +25,6 @@ public sealed class AccountingPeriodRepository : IAccountingPeriodRepository
     {
         await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
-        // SQL crudo a proposito, mismo motivo que JournalEntryRepository.LockAndRequirePeriodOpenAsync:
-        // FOR UPDATE serializa el cierre contra un posteo concurrente sobre el mismo periodo.
         var period = await _context.AccountingPeriods
             .FromSqlInterpolated($"SELECT * FROM periodos_contables WHERE id = {accountingPeriodId} AND empresa_id = {companyId} FOR UPDATE")
             .SingleOrDefaultAsync(cancellationToken)

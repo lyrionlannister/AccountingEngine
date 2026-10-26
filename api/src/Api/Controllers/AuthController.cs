@@ -40,20 +40,14 @@ public sealed class AuthController : ControllerBase
     [EnableRateLimiting("login")]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginBody body, CancellationToken cancellationToken)
     {
-        // Límite por IP (atributo arriba) y por cuenta (aquí): sin el segundo, muchas IPs
-        // distintas podían intentar fuerza bruta sin tope contra una sola cuenta.
         if (!_accountRateLimiter.TryAcquire(body.Email))
             return Problem(
                 statusCode: StatusCodes.Status429TooManyRequests,
                 title: "Demasiados intentos",
                 detail: "Demasiados intentos de inicio de sesión para esta cuenta. Intenta de nuevo más tarde.");
 
-        // Corregida por ForwardedHeadersMiddleware (ver Program.cs) — nunca la IP interna de nginx.
         var remoteIp = HttpContext.Connection.RemoteIpAddress
             ?? throw new InvalidOperationException("Request has no RemoteIpAddress.");
-        // Un socket dual-stack puede representar el mismo cliente IPv4 como "::ffff:a.b.c.d" en
-        // vez de "a.b.c.d" según configuración — sin normalizar, la regla de 1 IP vería al mismo
-        // cliente como dos IPs distintas entre un request y otro.
         var ip = (remoteIp.IsIPv4MappedToIPv6 ? remoteIp.MapToIPv4() : remoteIp).ToString();
 
         var result = await _login.LoginAsync(new LoginRequest(body.Email, body.Password, ip), cancellationToken);

@@ -50,9 +50,6 @@ public sealed class RegisterUserServiceTests : IAsyncLifetime
     [Fact]
     public async Task RegisterAsync_TrulyConcurrentWithSameEmail_OnlyOneSucceeds()
     {
-        // El chequeo previo (ExistsByEmailAsync) no basta bajo concurrencia real — dos
-        // registros en vuelo al mismo tiempo pueden pasarlo ambos. El índice único de
-        // Postgres es el backstop (ver UserRepository.AddAsync).
         await using var database = await TestDatabase.CreateAsync(_postgres);
 
         async Task<bool> AttemptAsync()

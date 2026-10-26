@@ -18,16 +18,9 @@ services:
     networks:
       - accounting-engine-net
 
-  # Cache de reportes (decisión de proyecto previa) + fuente de verdad del camino caliente de
-  # Auth (tasks/plan-auth.md). notify-keyspace-events Ex habilita el listener de expiración de
-  # sesiones (RedisSessionExpiryListener). Sin puerto expuesto al host: solo "api" lo necesita.
   redis:
     image: docker.io/library/redis:7-alpine
     container_name: accounting-engine-redis
-    # requirepass: sin auth, cualquier proceso en la red docker podía leer/forjar/borrar
-    # sesiones de cualquier usuario escribiendo directo en Redis. appendonly + volumen:
-    # Redis ahora guarda estado de sesión, no solo caché de reportes — sin persistencia, un
-    # reinicio del contenedor desloguea a todos los usuarios de golpe.
     command: redis-server --notify-keyspace-events Ex --requirepass ${REDIS_PASSWORD} --appendonly yes
     volumes:
       - accounting-engine-redisdata:/data
@@ -46,12 +39,6 @@ services:
     container_name: accounting-engine-api
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      # Rol de aplicacion (motor_contable_app), no el propietario (POSTGRES_USER) que corre las
-      # migraciones — sin esto, "revocar UPDATE/DELETE sobre auditoria_contable" no es real
-      # porque el propietario de una tabla siempre puede editarla/borrarla. Ver
-      # tasks/plan-auditoria.md seccion 3.3. El rol se crea/actualiza en la migracion
-      # AddAppRoleAndRevokeAuditPrivileges — debe aplicarse (dotnet ef database update, con el
-      # rol propietario) antes de levantar "api" con este connection string.
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=motor_contable_app;Password=${ACCOUNTING_APP_DB_PASSWORD}
       ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD}
       Jwt__SigningKey: ${JWT_SIGNING_KEY}
@@ -73,9 +60,6 @@ services:
       - api
     networks:
       accounting-engine-net:
-        # IP fija: Api/Program.cs confía solo en esta dirección vía ForwardedHeadersOptions.KnownProxies
-        # para leer la IP real del cliente (tasks/plan-auth.md) — no en el subnet completo ni en el
-        # rango por defecto de Docker.
         ipv4_address: 172.28.0.10
 
 networks:

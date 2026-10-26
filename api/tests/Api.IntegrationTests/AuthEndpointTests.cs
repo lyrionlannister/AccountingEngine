@@ -107,8 +107,6 @@ public sealed class AuthEndpointTests : IClassFixture<AuthApiFactory>
     [Fact]
     public async Task Login_11thAttemptForSameAccountFromDifferentIps_Returns429()
     {
-        // El límite por IP (prueba anterior) no detiene esto: cada intento viene de una IP
-        // nueva. El límite por cuenta (LoginAccountRateLimiter) es el que debe frenarlo.
         const string email = "rate-limited-distributed@acme.test";
         await RegisterUserAsync(email, "s3cret-password");
         using var client = _factory.CreateClient();

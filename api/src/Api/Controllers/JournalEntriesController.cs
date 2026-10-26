@@ -50,9 +50,6 @@ public sealed class JournalEntriesController(
         DateOnly EntryDate,
         [Required(ErrorMessage = "La descripción es obligatoria.")] string Description);
 
-    // Falla de resolución de una referencia del body/ruta a su id interno (PublicId que no existe
-    // en la empresa activa) — nunca llega a los Services, se traduce a 404 aquí mismo porque es
-    // un problema de transporte, no una regla de negocio que Accounting.Services deba conocer.
     private sealed class ReferenceNotFoundException(string referenceKind) : Exception
     {
         public string ReferenceKind { get; } = referenceKind;
@@ -108,9 +105,6 @@ public sealed class JournalEntriesController(
         return Created(string.Empty, result);
     }
 
-    // Batch por tipo de referencia (4 queries fijas, no 4 por línea): antipatterns-architecture
-    // marca "queries en loop" — resolver cada línea por separado multiplicaba los round-trips
-    // por el número de líneas del asiento.
     private async Task<IReadOnlyList<JournalEntryLineRequest>> ResolveLinesAsync(
         long companyId, IReadOnlyList<JournalEntryLineBody> lines, CancellationToken cancellationToken)
     {

@@ -2,8 +2,6 @@ using Companies.DTOs;
 
 namespace Companies.Services;
 
-// Único punto público que Auth puede llamar de Companies tras un login exitoso, para saber
-// a qué empresas pertenece el usuario (ver tasks/plan-auth.md, Task 2).
 public sealed class ListMembershipsForUserService
 {
     private readonly IMembershipRepository _memberships;

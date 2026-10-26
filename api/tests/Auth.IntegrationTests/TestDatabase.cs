@@ -13,8 +13,6 @@ internal sealed class TestDatabase : IAsyncDisposable
 
     private TestDatabase(NpgsqlDataSource dataSource) => _dataSource = dataSource;
 
-    // Reproduce el orden real de despliegue (Companies -> Users -> Auth), igual que
-    // Users.IntegrationTests/TestDatabase.cs.
     public static async Task<TestDatabase> CreateAsync(string connectionString)
     {
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);

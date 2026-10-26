@@ -77,7 +77,6 @@ public sealed class AuditTrailFixupTests : IAsyncLifetime
         context.AuditTrailEntries.Add(validEntry);
         await context.SaveChangesAsync();
 
-        // Ninguna referencia no nula: solo se puede forzar con SQL crudo, el dominio no lo permite.
         await Assert.ThrowsAsync<PostgresException>(async () =>
         {
             await context.Database.ExecuteSqlInterpolatedAsync(

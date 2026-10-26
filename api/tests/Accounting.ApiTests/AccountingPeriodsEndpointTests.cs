@@ -56,9 +56,6 @@ public sealed class AccountingPeriodsEndpointTests : IClassFixture<AccountingApi
         return new AppDbContext(options, new FixedCompanyContext(companyId));
     }
 
-    // La resolucion de una solicitud de reapertura no puede hacerla el mismo usuario que la pidio
-    // (segregacion de funciones, hallazgo de auditoria) — por eso las pruebas que resuelven una
-    // solicitud necesitan un segundo usuario Admin de la misma empresa.
     private async Task<string> RegisterSecondAdminAndLoginAsync(long companyId, long creatorUserId, string suffix)
     {
         using var scope = _factory.Services.CreateScope();
@@ -259,9 +256,6 @@ public sealed class AccountingPeriodsEndpointTests : IClassFixture<AccountingApi
         var resolved = await resolveResponse.Content.ReadFromJsonAsync<PeriodReopenRequestResult>();
         Assert.Equal("Rejected", resolved!.Status);
 
-        // AccountingPeriod.Close() lanza InvalidOperationException genérica ("Only an open period
-        // can be closed") — mismo tipo sin distinguir que el resto de los casos documentados en
-        // tasks/todo-accounting-api.md ("Limitaciones conocidas"), por eso no hay un 409 dedicado.
         var secondClose = await client.SendAsync(Authorized(
             new HttpRequestMessage(HttpMethod.Post, $"/api/companies/{fixture.CompanyPublicId}/accounting-periods/{fixture.PeriodPublicId}/closure"),
             fixture.Jwt));

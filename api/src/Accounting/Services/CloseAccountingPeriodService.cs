@@ -19,16 +19,19 @@ public sealed class CloseAccountingPeriodService
 
     public async Task<AccountingPeriodResult> CloseAsync(CloseAccountingPeriodRequest request, CancellationToken cancellationToken)
     {
-        var period = await _periods.FindByIdAsync(request.CompanyId, request.AccountingPeriodId, cancellationToken)
-            ?? throw new InvalidOperationException($"Accounting period {request.AccountingPeriodId} not found.");
+        // El chequeo de borradores y el cierre corren DENTRO del lock de fila que CloseAsync
+        // toma sobre el periodo (FOR UPDATE) — sin esto, un Post concurrente podia colarse
+        // durante la ventana completa de esta decision, no solo durante el UPDATE final
+        // (hallazgo de auditoria, api/CLAUDE.md §5.4).
+        var period = await _periods.CloseAsync(request.CompanyId, request.AccountingPeriodId, async (period, ct) =>
+        {
+            // Ver AccountingPeriodHasDraftEntriesException: bloquea, no ignora (decisión documentada).
+            if (await _journalEntries.HasDraftEntriesAsync(request.CompanyId, request.AccountingPeriodId, ct))
+                throw new AccountingPeriodHasDraftEntriesException(request.AccountingPeriodId);
 
-        // Ver AccountingPeriodHasDraftEntriesException: bloquea, no ignora (decisión documentada).
-        if (await _journalEntries.HasDraftEntriesAsync(request.CompanyId, request.AccountingPeriodId, cancellationToken))
-            throw new AccountingPeriodHasDraftEntriesException(request.AccountingPeriodId);
-
-        period.Close(request.ClosedBy, DateTimeOffset.UtcNow);
-        _auditTrail.Record(AuditOperation.PeriodClosed, request.CompanyId, request.ClosedBy, period, DateTimeOffset.UtcNow);
-        await _periods.UpdateAsync(period, cancellationToken);
+            period.Close(request.ClosedBy, DateTimeOffset.UtcNow);
+            _auditTrail.Record(AuditOperation.PeriodClosed, request.CompanyId, request.ClosedBy, period, DateTimeOffset.UtcNow);
+        }, cancellationToken);
 
         return ToResult(period);
     }

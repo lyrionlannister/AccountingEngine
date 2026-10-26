@@ -53,6 +53,15 @@ internal sealed class FakeAccountingPeriodRepository : IAccountingPeriodReposito
         Task.FromResult(Periods.FirstOrDefault(p => p.CompanyId == companyId && p.PublicId == publicId));
 
     public Task UpdateAsync(AccountingPeriod period, CancellationToken cancellationToken) => Task.CompletedTask;
+
+    public async Task<AccountingPeriod> CloseAsync(
+        long companyId, long accountingPeriodId, Func<AccountingPeriod, CancellationToken, Task> closeAction, CancellationToken cancellationToken)
+    {
+        var period = Periods.FirstOrDefault(p => p.CompanyId == companyId && p.Id == accountingPeriodId)
+            ?? throw new InvalidOperationException($"Accounting period {accountingPeriodId} not found.");
+        await closeAction(period, cancellationToken);
+        return period;
+    }
 }
 
 internal sealed class FakeVoucherTypeRepository : IVoucherTypeRepository

@@ -3,6 +3,7 @@ using Accounting.Domain.Enums;
 using Accounting.DTOs;
 using Accounting.Repositories;
 using Accounting.Services;
+using Npgsql;
 
 namespace Accounting.IntegrationTests;
 
@@ -140,5 +141,36 @@ public sealed class JournalEntryConcurrencyTests : IAsyncLifetime
         Assert.Equal(
             Enumerable.Range(1, successfulPosts).Select(n => (long?)n).OrderBy(n => n),
             sequenceNumbers.OrderBy(n => n));
+    }
+
+    [Fact]
+    public async Task CloseAsync_WhileAnotherTransactionHoldsThePeriodRowLock_BlocksUntilReleased()
+    {
+        await using var db = await TestDatabase.CreateAsync(_postgres);
+        var fixture = await SeedAsync(db);
+
+        await using var lockConnection = new NpgsqlConnection(_postgres);
+        await lockConnection.OpenAsync();
+        await using var lockTransaction = await lockConnection.BeginTransactionAsync();
+        await using (var lockCommand = lockConnection.CreateCommand())
+        {
+            lockCommand.Transaction = lockTransaction;
+            lockCommand.CommandText = $"SELECT 1 FROM periodos_contables WHERE id = {fixture.PeriodId} FOR UPDATE";
+            await using var reader = await lockCommand.ExecuteReaderAsync();
+            await reader.ReadAsync();
+        }
+
+        using var context = db.NewContext();
+        var service = new CloseAccountingPeriodService(
+            new AccountingPeriodRepository(context), new JournalEntryRepository(context), new AuditTrailWriter(context));
+        var closeTask = service.CloseAsync(new CloseAccountingPeriodRequest(CompanyId, fixture.PeriodId, "closer"), CancellationToken.None);
+
+        var finishedBeforeLockReleased = await Task.WhenAny(closeTask, Task.Delay(500)) == closeTask;
+        Assert.False(finishedBeforeLockReleased);
+
+        await lockTransaction.CommitAsync();
+
+        var result = await closeTask;
+        Assert.Equal("Closed", result.Status);
     }
 }

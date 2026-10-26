@@ -17,7 +17,7 @@ Módulos actuales:
 
 | Módulo | Responsabilidad |
 |---|---|
-| `Companies` | Tenant, empresa, usuario, membership — contexto de empresa activa por request |
+| `Companies` | Tenant, empresa, membership (vincula un usuario de `Users` a una empresa con un rol) — contexto de empresa activa por request |
 | `Users` | Identidad de usuario |
 | `Auth` | Login, sesiones (JWT + Redis con failover a Postgres) |
 | `Accounting` | Núcleo contable: catálogo de cuentas, asientos, períodos, saldos, auditoría |

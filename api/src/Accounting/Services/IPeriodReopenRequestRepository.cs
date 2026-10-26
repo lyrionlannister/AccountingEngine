@@ -12,8 +12,5 @@ public interface IPeriodReopenRequestRepository
 
     Task UpdateAsync(PeriodReopenRequest request, CancellationToken cancellationToken);
 
-    // Un solo SaveChangesAsync envuelto en transaccion explicita para TODO lo que
-    // ResolvePeriodReopenService dejo trackeado (la solicitud, el periodo reabierto si aplica,
-    // y la fila de auditoria) — antes eran 2 SaveChangesAsync separados, no atomicos.
     Task SaveResolutionAsync(CancellationToken cancellationToken);
 }

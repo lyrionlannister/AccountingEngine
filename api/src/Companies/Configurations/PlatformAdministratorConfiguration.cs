@@ -22,8 +22,6 @@ public sealed class PlatformAdministratorConfiguration : IEntityTypeConfiguratio
         builder.Property(e => e.UserId).HasColumnName("usuario_id").IsRequired();
         builder.Property(e => e.GrantedAt).HasColumnName("otorgado_en").IsRequired();
 
-        // UserId es un long plano, sin FK de Postgres hacia la tabla usuarios (propiedad del
-        // módulo Users) — mismo patrón que Accounting.CompanyId, ver tasks/plan-users.md.
         builder.HasIndex(e => e.PublicId).IsUnique();
         builder.HasIndex(e => e.UserId).IsUnique();
     }

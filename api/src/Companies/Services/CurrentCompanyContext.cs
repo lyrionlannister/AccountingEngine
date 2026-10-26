@@ -2,8 +2,6 @@ using Shared;
 
 namespace Companies.Services;
 
-// No hay capa HTTP todavía: ResolveAsync recibe userId/companyId como parámetros explícitos
-// en lugar de leerlos de un token o de la sesión.
 public sealed class CurrentCompanyContext : ICurrentCompanyContext
 {
     private readonly IMembershipRepository _memberships;

@@ -6,10 +6,6 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Api.Security;
 
-// Filtro global (Program.cs: AddControllers(o => o.Filters.Add<CompanyContextFilter>())) — una ruta
-// con {companyPublicId} nunca puede olvidar aplicarlo, a diferencia de un atributo que haya que
-// decorar en cada Controller nuevo. Corre después de [Authorize] (filtros de MVC se ejecutan ya
-// autenticado), por eso puede leer el claim "sub" sin volver a validar el token.
 public sealed class CompanyContextFilter(ICompanyRepository companies, CurrentCompanyContext currentCompany) : IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -36,8 +32,6 @@ public sealed class CompanyContextFilter(ICompanyRepository companies, CurrentCo
         }
         catch (CompanyMembershipNotFoundException)
         {
-            // Mismo resultado que "la empresa no existe" (arriba) — nunca se confirma a quien
-            // llama que el companyPublicId es real si no tiene membership activa en ella.
             context.Result = NotFound(context);
             return;
         }

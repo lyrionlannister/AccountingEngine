@@ -14,8 +14,6 @@ public sealed class AppDbContext : DbContext
         _currentCompany = currentCompany;
     }
 
-    // Leído por el query filter de ApplyCompanyScopeFilters a través de "this": no pasar
-    // _currentCompany directamente, o el filtro queda fijo a la primera instancia del modelo cacheado.
     public long CurrentCompanyId => _currentCompany.CompanyId;
 
     public DbSet<Currency> Currencies => Set<Currency>();

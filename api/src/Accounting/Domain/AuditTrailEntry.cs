@@ -2,9 +2,6 @@ using Accounting.Domain.Enums;
 
 namespace Accounting.Domain;
 
-// Referencias por navegación (no solo FK escalar): al auditar un insert nuevo (p. ej. un
-// JournalEntry recién contabilizado) su Id todavía no existe antes de SaveChangesAsync. EF Core
-// solo resuelve ese FK en el mismo SaveChanges si la relación se expresa por navegación.
 public sealed class AuditTrailEntry
 {
     public long Id { get; private set; }

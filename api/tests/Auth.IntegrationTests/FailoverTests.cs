@@ -11,11 +11,6 @@ using Users.Services;
 
 namespace Auth.IntegrationTests;
 
-// Prueba el escenario central de tasks/plan-auth.md: Redis es la fuente de verdad del camino
-// caliente, pero si deja de responder, FailoverSessionStore sigue sirviendo contra Postgres
-// sin lanzar al usuario. Esta clase apaga el contenedor de Redis de la colección compartida;
-// como xUnit corre las pruebas de una misma collection en serie, es seguro, siempre que se
-// reinicie Redis al salir (DisposeAsync).
 [Collection(AuthTestCollection.Name)]
 public sealed class FailoverTests : IAsyncLifetime
 {
@@ -39,9 +34,6 @@ public sealed class FailoverTests : IAsyncLifetime
 
         await _env.StopRedisAsync();
 
-        // Un IConnectionMultiplexer ya conectado detecta la caída en la siguiente operación
-        // (ConnectTimeout corto) en vez de fallar al construirlo — se crea aquí, después de
-        // apagar Redis, para no esperar su timeout de conexión inicial en cada prueba.
         using var redis = await ConnectionMultiplexer.ConnectAsync(new ConfigurationOptions
         {
             EndPoints = { _env.RedisConnectionString },
@@ -101,9 +93,6 @@ public sealed class FailoverTests : IAsyncLifetime
 
         await _env.StartRedisAsync();
 
-        // Redis vuelve sano pero nunca tuvo esta sesión — solo existe en el respaldo de
-        // Postgres. Sin el fallback-on-miss en FailoverSessionStore.FindAsync, esto devolvía
-        // null (sesión "perdida") en cuanto Redis volvía a responder.
         using var redisAfterRecovery = await ConnectionMultiplexer.ConnectAsync(_env.RedisConnectionString);
         var storeAfterRecovery = new FailoverSessionStore(
             new RedisSessionStore(redisAfterRecovery),

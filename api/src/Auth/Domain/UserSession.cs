@@ -2,8 +2,6 @@ namespace Auth.Domain;
 
 public sealed class UserSession
 {
-    // Única fuente de verdad del TTL deslizante — antes duplicado como constante privada en
-    // RedisSessionStore y PostgresSessionFallbackStore, con riesgo de que diverjan.
     public static readonly TimeSpan SlidingWindow = TimeSpan.FromMinutes(30);
 
     public Guid SessionId { get; private set; }
@@ -33,8 +31,6 @@ public sealed class UserSession
         };
     }
 
-    // Para rehidratar desde un almacén que no materializa por reflexión (Redis) — EF Core
-    // (respaldo de Postgres) nunca necesita esto, escribe directo a los campos privados.
     public static UserSession Reconstitute(Guid sessionId, long userId, string ip, DateTimeOffset createdAt, DateTimeOffset lastSeenAt) =>
         new()
         {

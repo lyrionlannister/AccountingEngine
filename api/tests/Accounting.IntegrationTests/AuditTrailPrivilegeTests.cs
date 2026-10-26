@@ -32,17 +32,12 @@ public sealed class AuditTrailPrivilegeTests : IAsyncLifetime
         await using var appConnection = OpenAsAppRole();
         await appConnection.OpenAsync();
 
-        // SELECT: debe funcionar (tabla vacia, pero el permiso en si no debe fallar).
         await using (var select = appConnection.CreateCommand())
         {
             select.CommandText = "SELECT count(*) FROM auditoria_contable";
             await select.ExecuteScalarAsync();
         }
 
-        // INSERT: le falta un empresa_id/operacion/actor/ocurrido_en validos y una referencia —
-        // basta con que el error NO sea de permisos (42501) para confirmar que INSERT esta
-        // concedido; se usa un INSERT sintacticamente invalido a proposito (faltan NOT NULL) para
-        // no tener que sembrar un asiento real solo para esta prueba de privilegios.
         var insertEx = await Assert.ThrowsAsync<PostgresException>(async () =>
         {
             await using var insert = appConnection.CreateCommand();
@@ -51,8 +46,6 @@ public sealed class AuditTrailPrivilegeTests : IAsyncLifetime
         });
         Assert.NotEqual("42501", insertEx.SqlState);
 
-        // UPDATE/DELETE: deben fallar por permisos (InsufficientPrivilege), no por una regla de
-        // la aplicacion — es la garantia real de esta fase.
         var updateEx = await Assert.ThrowsAsync<PostgresException>(async () =>
         {
             await using var update = appConnection.CreateCommand();

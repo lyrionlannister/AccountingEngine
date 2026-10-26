@@ -37,9 +37,6 @@ public sealed class AuthTestEnvironment : IAsyncLifetime
 
     public string RedisConnectionString => _redis.GetConnectionString();
 
-    // Simula una caída de Redis a mitad de prueba (Task 12, escenario de failover).
-    // Las pruebas de esta colección corren secuenciales (xUnit no paraleliza dentro de una
-    // misma collection), así que es seguro siempre que la propia prueba la reinicie al salir.
     public Task StopRedisAsync() => _redis.StopAsync();
 
     public Task StartRedisAsync() => _redis.StartAsync();

@@ -23,8 +23,6 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(e => e.PasswordHash).HasColumnName("contrasena_hash").IsRequired();
         builder.Property(e => e.IsActive).HasColumnName("activo").IsRequired();
 
-        // Columna generada para forzar unicidad case-insensitive a nivel de base de datos,
-        // sin depender únicamente de que el dominio normalice el correo antes de persistir.
         builder.Property<string>("NormalizedEmail")
             .HasColumnName("correo_normalizado")
             .HasComputedColumnSql("lower(correo)", stored: true);

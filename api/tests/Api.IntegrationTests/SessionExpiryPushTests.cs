@@ -47,8 +47,6 @@ public sealed class SessionExpiryPushTests : IClassFixture<AuthApiFactory>
         connection.On<object>(SessionHub.SessionExpiredEvent, payload => eventReceived.TrySetResult(payload.ToString()!));
         await connection.StartAsync();
 
-        // Fuerza la expiración ya (en vez de esperar el TTL deslizante real de 30 min) —
-        // ejercita el mismo mecanismo (RedisSessionExpiryListener) que un vencimiento real.
         var redis = scope.ServiceProvider.GetRequiredService<IConnectionMultiplexer>();
         await redis.GetDatabase().KeyExpireAsync($"session:{userId}:{sessionId}", TimeSpan.FromMilliseconds(200));
 

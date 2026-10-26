@@ -15,9 +15,6 @@ using Users.Persistence;
 
 namespace Accounting.ApiTests;
 
-// Mismo patrón que Api.IntegrationTests/ApiTestEnvironment — Testcontainers en vez de una base
-// fija en localhost: WeatherForecastEndpointTests (scaffold que esto reemplaza) nunca tocó la
-// base de datos, así que el host nunca necesitó una conexión real hasta ahora.
 public sealed class AccountingApiTestEnvironment : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder().WithImage("postgres:18-alpine").Build();
@@ -32,8 +29,6 @@ public sealed class AccountingApiTestEnvironment : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        // Leida por la migracion AddAppRoleAndRevokeAuditPrivileges (CREATE/ALTER ROLE
-        // motor_contable_app) antes de migrar Accounting mas abajo.
         Environment.SetEnvironmentVariable("ACCOUNTING_APP_DB_PASSWORD", "test-app-role-password");
 
         await Task.WhenAll(_postgres.StartAsync(), _redis.StartAsync());
@@ -71,7 +66,6 @@ public sealed class AccountingApiTestEnvironment : IAsyncLifetime
         await accountingContext.Database.MigrateAsync();
     }
 
-    // Migrate() nunca evalúa el filtro global por empresa — ningún valor real hace falta aquí.
     private sealed class MigrationOnlyCompanyContext : Shared.ICurrentCompanyContext
     {
         public long CompanyId => throw new InvalidOperationException("Not resolved; migration-only context.");

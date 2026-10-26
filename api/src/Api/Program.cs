@@ -37,9 +37,6 @@ builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        // Sin esto, JwtBearerHandler remapea "sub" al tipo de claim legado
-        // (nameidentifier), y SessionValidationMiddleware/AuthController, que leen
-        // JwtRegisteredClaimNames.Sub tal cual, nunca lo encuentran.
         options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -52,8 +49,6 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(jwtSigningKeyBytes)
         };
 
-        // El WebSocket nativo del navegador no puede mandar el header Authorization —
-        // SignalR manda el token por query string en su lugar (patrón estándar de ASP.NET Core).
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -79,14 +74,8 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddRateLimiter(options =>
 {
-    // Por defecto ASP.NET Core rechaza con 503; 429 es el código HTTP correcto para "demasiadas
-    // solicitudes" y el que un cliente esperaría interpretar (Retry-After, etc.).
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    // Partición por IP: un bucket global compartido dejaría que un solo cliente agote el
-    // límite para todos los demás (lo contrario de lo que un rate limit de login busca).
-    // En memoria — válido mientras "api" sea una sola instancia (ver compose.yaml); migrar a
-    // un limiter respaldado por Redis (ya disponible) si se escala horizontalmente.
     options.AddPolicy("login", httpContext => RateLimitPartition.GetFixedWindowLimiter(
         partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         factory: _ => new FixedWindowRateLimiterOptions
@@ -100,9 +89,6 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    // Confía solo en la IP fija de nginx (compose.yaml), no en todo el subnet compartido —
-    // ese /24 también incluye postgres/redis/api, y cualquiera de ellos podría falsificar
-    // X-Forwarded-For si se confiara en la red entera en vez de en el único proxy real.
     options.KnownProxies.Add(IPAddress.Parse("172.28.0.10"));
 });
 

@@ -18,8 +18,6 @@ public sealed class AccountBalanceSnapshotRepository : IAccountBalanceSnapshotRe
 
     public async Task<(decimal DebitTotal, decimal CreditTotal)> SumPostedLinesAsync(long companyId, long accountingPeriodId, long accountId, CancellationToken cancellationToken)
     {
-        // Agregado en SQL (un solo round-trip vía GroupBy constante), no en memoria: traer
-        // todas las líneas para sumarlas en C# no escala con el número de líneas del período.
         var totals = await _context.JournalEntries
             .Where(e => e.CompanyId == companyId && e.AccountingPeriodId == accountingPeriodId && e.Status == JournalEntryStatus.Posted)
             .SelectMany(e => e.Lines)

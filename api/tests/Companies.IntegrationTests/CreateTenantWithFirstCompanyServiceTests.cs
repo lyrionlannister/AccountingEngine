@@ -51,8 +51,6 @@ public sealed class CreateTenantWithFirstCompanyServiceTests : IAsyncLifetime
 
         var sut = new CreateTenantWithFirstCompanyService(new TenantRepository(context));
 
-        // CreatorUserId = 0 hace que Membership.Create lance ArgumentOutOfRangeException
-        // después de que Tenant y Company ya se insertaron dentro de la misma transacción.
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => sut.CreateAsync(
             new CreateTenantWithFirstCompanyRequest("Acme Holdings", "Acme Colombia", "CO", CreatorUserId: 0),
             CancellationToken.None));

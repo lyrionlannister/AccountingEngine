@@ -4,8 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Companies.Persistence;
 
-// Companies es dueño de la Membership que define el aislamiento: sus propias tablas
-// no pasan por ApplyCompanyScopeFilters (evita la circularidad descrita en el plan).
 public sealed class CompaniesDbContext : DbContext
 {
     public CompaniesDbContext(DbContextOptions<CompaniesDbContext> options) : base(options)

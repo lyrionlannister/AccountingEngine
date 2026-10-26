@@ -6,16 +6,8 @@ using StackExchange.Redis;
 
 namespace Auth.Repositories;
 
-// Escucha __keyevent@0__:expired de Redis y notifica vía ISessionExpiryNotifier (lo implementa
-// Api con SignalR — ver tasks/plan-auth.md, Phase 3). Requiere "notify-keyspace-events Ex" en
-// el servidor (ya configurado en compose.yaml). Ignora cualquier key expirada sin el prefijo
-// "session:" — prepara el terreno para que Reportes (Fase 5) use la misma instancia de Redis.
 public sealed class RedisSessionExpiryListener : BackgroundService
 {
-    // Cota de handlers concurrentes: el callback de SubscribeAsync no espera a que termine
-    // cada HandleExpiredKeyAsync, así que un evento de expiración masiva (p. ej. un restart de
-    // Redis que expira miles de keys casi simultáneas) podía abrir un scope de DI y una
-    // notificación por cada una sin ningún límite.
     private const int MaxConcurrentNotifications = 50;
 
     private readonly IConnectionMultiplexer _connection;
@@ -33,11 +25,6 @@ public sealed class RedisSessionExpiryListener : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Un BackgroundService sin manejar sus propias excepciones tira todo el host abajo
-        // (.NET 8+, BackgroundServiceExceptionBehavior.StopHost por defecto) — si Redis está
-        // caído al arrancar o se cae después, SubscribeAsync lanza y esto anulaba el mismo
-        // failover que FailoverSessionStore ya implementa para el resto del módulo. Reintenta
-        // con backoff en vez de dejar que la excepción escape de ExecuteAsync.
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -50,7 +37,6 @@ public sealed class RedisSessionExpiryListener : BackgroundService
             }
             catch (OperationCanceledException)
             {
-                // Apagado normal del host.
             }
             catch (RedisException ex)
             {

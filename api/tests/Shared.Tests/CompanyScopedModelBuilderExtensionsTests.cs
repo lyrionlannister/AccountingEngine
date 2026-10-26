@@ -104,10 +104,6 @@ public class CompanyScopedModelBuilderExtensionsTests
     [Fact]
     public void QueryFilter_UsesEachInstancesOwnCompanyId_DespiteSharedCompiledModel()
     {
-        // Regresión: EF Core cachea el modelo compilado por tipo de DbContext. Si el filtro
-        // capturara el ICurrentCompanyContext como constante externa en vez de leer una
-        // propiedad de "this", todas las instancias quedarían fijas al CompanyId de la
-        // primera instancia construida en el proceso.
         var dbName = Guid.NewGuid().ToString();
 
         using (var seedContext = CreateContext(dbName, companyId: 1))
@@ -117,7 +113,6 @@ public class CompanyScopedModelBuilderExtensionsTests
             seedContext.SaveChanges();
         }
 
-        // Instancia "caliente": fuerza que el modelo quede compilado/cacheado con esta primera instancia.
         using var warmUpContext = CreateContext(dbName, companyId: 1);
         _ = warmUpContext.ScopedThings.ToList();
 

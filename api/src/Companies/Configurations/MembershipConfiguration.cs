@@ -25,8 +25,6 @@ public sealed class MembershipConfiguration : IEntityTypeConfiguration<Membershi
         builder.Property(e => e.IsActive).HasColumnName("activo").IsRequired();
         builder.Property(e => e.GrantedAt).HasColumnName("otorgado_en").IsRequired();
 
-        // UserId es un long plano, sin FK de Postgres hacia la tabla usuarios (propiedad del
-        // módulo Users) — mismo patrón que Accounting.CompanyId, ver tasks/plan-users.md.
         builder.HasOne<Company>()
             .WithMany()
             .HasForeignKey(e => e.CompanyId)

@@ -21,9 +21,6 @@ public class PostJournalEntryServiceTests
         PostedBy: "tester",
         Lines: new List<JournalEntryLineRequest>
         {
-            // Mismo AccountId en ambas líneas a propósito: a los fakes de este archivo no les
-            // interesa distinguir cuentas, solo el período/idempotencia — una sola cuenta
-            // sembrada (Id por defecto 0) alcanza y es válida para partida doble.
             new(AccountId: 0, null, null, CurrencyId: 1, debit, 0m),
             new(AccountId: 0, null, null, CurrencyId: 1, 0m, debit)
         },
@@ -89,8 +86,6 @@ public class PostJournalEntryServiceTests
     [Fact]
     public async Task PostAsync_WithAccountNotBelongingToCompany_ThrowsReferenceNotFound()
     {
-        // Antes de este check, una FK por sí sola solo probaba que la cuenta existía en algún
-        // lado, no que fuera de la misma empresa que el asiento (hallazgo de tenant-isolation).
         var (service, _, _) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic, seedAccount: false);
 
         await Assert.ThrowsAsync<JournalEntryLineReferenceNotFoundException>(

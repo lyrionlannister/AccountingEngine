@@ -11,10 +11,6 @@ public sealed class AccountingPeriodClosedException : Exception
     }
 }
 
-// Decisión documentada (tasks/todo.md pedía que quedara explícita, no implícita): cerrar un
-// periodo con asientos en Draft los deja huérfanos para siempre (nunca se pueden Post() en un
-// periodo cerrado). En vez de ignorarlo silenciosamente, se bloquea el cierre — el caller debe
-// contabilizar o descartar (Void) esos borradores primero.
 public sealed class AccountingPeriodHasDraftEntriesException : Exception
 {
     public long AccountingPeriodId { get; }
@@ -26,10 +22,6 @@ public sealed class AccountingPeriodHasDraftEntriesException : Exception
     }
 }
 
-// Una FK por sí sola solo garantiza que la fila existe, no que es de la misma empresa — ver
-// hallazgo de tenant-isolation. Un solo tipo de excepción cubre Account/CostCenter/Party
-// porque las tres son el mismo caso (una referencia de línea que no pertenece a la empresa del
-// asiento), no tres fallos distintos.
 public sealed class JournalEntryLineReferenceNotFoundException : Exception
 {
     public string ReferenceKind { get; }
@@ -69,10 +61,6 @@ public sealed class JournalEntryIdempotencyConflictException : Exception
     }
 }
 
-// Membership tiene rol (Admin/Accountant/Viewer) desde que existe, pero ningun caso de uso de
-// Accounting lo verificaba — un Viewer podia contabilizar, cerrar periodos y aprobar su propia
-// solicitud de reapertura (hallazgo de auditoria). RoleGuard centraliza el chequeo para no
-// repetir la logica de comparacion en cada Service.
 internal static class RoleGuard
 {
     public static void Require(string currentRole, params string[] allowedRoles)
@@ -95,8 +83,6 @@ public sealed class InsufficientRoleException : Exception
     }
 }
 
-// Segregacion de funciones: quien resuelve una solicitud de reapertura no puede ser quien la
-// pidio, sin importar su rol -- ni siquiera un Admin aprueba su propia solicitud.
 public sealed class SelfApprovalNotAllowedException : Exception
 {
     public SelfApprovalNotAllowedException()

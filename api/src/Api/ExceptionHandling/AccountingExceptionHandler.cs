@@ -4,16 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.ExceptionHandling;
 
-// Solo mapea las excepciones reales que Accounting.Services lanza hoy (mismo criterio que
-// AuthExceptionHandler) — registrado ANTES de AuthExceptionHandler en Program.cs: si éste
-// corriera primero, su catch-all (que siempre devuelve true) nunca dejaría llegar la excepción
-// aquí. Lo que este handler no reconoce, devuelve false y cae al catch-all genérico de Auth.
-//
-// AccountingPeriodClosedException/HasDraftEntriesException y la violación de balance de
-// JournalEntry.Post() son, ambas, InvalidOperationException sin tipo dedicado para el caso de
-// "período no encontrado" en otros Services — por eso NO se mapea InvalidOperationException en
-// general (conflaría casos distintos bajo un único código HTTP); solo se mapean los tipos
-// concretos listados abajo.
 public sealed class AccountingExceptionHandler(ILogger<AccountingExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)

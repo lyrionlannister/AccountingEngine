@@ -20,10 +20,6 @@ public sealed class AuthApiFactory : WebApplicationFactory<Program>
         builder.ConfigureServices(services =>
             services.AddTransient<IStartupFilter, FakeRemoteIpStartupFilter>());
 
-    // TestServer no abre un socket real, así que Connection.RemoteIpAddress queda null
-    // (a diferencia de cualquier conexión TCP real detrás de nginx). Lo fijamos aquí para
-    // que las pruebas ejerciten la misma ruta que producción; el header permite simular IPs
-    // distintas por request (p. ej. para probar el rechazo de sesión por IP) sin abrir sockets.
     public const string TestRemoteIpHeader = "X-Test-RemoteIp";
 
     private sealed class FakeRemoteIpStartupFilter : IStartupFilter

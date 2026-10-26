@@ -10,11 +10,6 @@ using Users.Services;
 
 namespace Api.IntegrationTests;
 
-// Reproduce el fallo real visto en CI (PR #7, job ApiTests): con Redis inalcanzable desde el
-// arranque — no apagado a mitad de sesión, como FailoverTests en Auth.IntegrationTests — el host
-// completo fallaba en Host.StartAsync() porque RedisConnectionExtensions.AddRedisConnection usaba
-// ConnectionMultiplexer.Connect() con AbortOnConnectFail=true (el default). Esto anulaba el
-// propósito de FailoverSessionStore: ni siquiera llegaba a arrancar para caer a Postgres.
 [Collection(ApiTestCollection.Name)]
 public sealed class RedisUnavailableAtStartupTests : IClassFixture<RedisUnavailableAtStartupTests.Factory>
 {
@@ -43,8 +38,6 @@ public sealed class RedisUnavailableAtStartupTests : IClassFixture<RedisUnavaila
         public Factory(ApiTestEnvironment environment)
         {
             Environment.SetEnvironmentVariable("ConnectionStrings__Default", environment.PostgresConnectionString);
-            // Puerto sin nada escuchando — nunca conecta, a diferencia de parar un contenedor
-            // real a mitad de prueba (eso ya lo cubre Auth.IntegrationTests/FailoverTests.cs).
             Environment.SetEnvironmentVariable("ConnectionStrings__Redis", "127.0.0.1:1");
             Environment.SetEnvironmentVariable("Jwt__SigningKey", Convert.ToBase64String(new byte[32]));
         }

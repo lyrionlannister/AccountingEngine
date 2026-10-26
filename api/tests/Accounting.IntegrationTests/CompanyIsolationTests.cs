@@ -17,11 +17,6 @@ using Users.Services;
 
 namespace Accounting.IntegrationTests;
 
-// Companies y Accounting comparten una sola base física (ver compose.yaml). Ambos DbContext
-// usan la tabla de historial de migraciones por defecto (__EFMigrationsHistory); esto es seguro
-// porque los nombres de migración de cada módulo son únicos (InitialCompaniesSchema vs.
-// InitialAccountingSchema/InitialCreate) y cada DbContext solo compara su propio conjunto de
-// nombres de migración contra esa tabla al decidir qué aplicar.
 [Collection(PostgresCollection.Name)]
 public sealed class CompanyIsolationTests : IAsyncLifetime
 {
@@ -86,8 +81,6 @@ public sealed class CompanyIsolationTests : IAsyncLifetime
     [Fact]
     public async Task PostAsync_WithAccountFromAnotherCompany_ThrowsReferenceNotFound()
     {
-        // La FK de "cuentas" por sí sola solo prueba que la fila existe, no que es de la misma
-        // empresa que el asiento — hallazgo de tenant-isolation sobre PostJournalEntryService.
         await using var database = await TestDatabase.CreateAsync(_postgres);
         const long companyA = 1;
         const long companyB = 2;
@@ -113,7 +106,6 @@ public sealed class CompanyIsolationTests : IAsyncLifetime
             new AccountRepository(contextB), new CostCenterRepository(contextB), new PartyRepository(contextB), new AuditTrailWriter(contextB),
             new FixedCurrentCompanyContext(companyB));
 
-        // companyB intenta contabilizar contra una cuenta que en realidad es de companyA.
         var request = new PostJournalEntryRequest(
             companyB, voucherType.Id, period.Id, new DateOnly(2026, 1, 15), "Cross-company attempt", "tester",
             new List<JournalEntryLineRequest>

@@ -23,8 +23,6 @@ public class PasswordHasherTests
     [Fact]
     public void Verify_WithHashFromOlderIterationCount_StillWorks()
     {
-        // Simula un hash emitido antes de subir las iteraciones a 600_000 (ver Users/Services/PasswordHasher.cs).
-        // El iteration count viaja dentro del propio hash, así que subir la constante no invalida hashes viejos.
         var salt = Convert.ToBase64String(new byte[16]);
         var key = Convert.ToBase64String(
             System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(

@@ -70,8 +70,6 @@ public sealed class PostJournalEntryService
         foreach (var line in request.Lines)
             entry.AddLine(line.AccountId, line.CostCenterId, line.PartyId, line.CurrencyId, line.DebitAmount, line.CreditAmount, line.Description);
 
-        // Antes de persistir: el fixup del FK a esta fila (todavía sin Id) depende de que
-        // ambas entidades viajen trackeadas en el mismo SaveChangesAsync (ver AuditTrailEntry).
         _auditTrail.Record(AuditOperation.JournalEntryPosted, request.CompanyId, request.PostedBy, entry, DateTimeOffset.UtcNow);
 
         await JournalEntryPoster.PostAsync(_journalEntries, _voucherTypes, entry, request.SequenceNumber, request.PostedBy, cancellationToken);
@@ -79,10 +77,6 @@ public sealed class PostJournalEntryService
         return ToResult(entry);
     }
 
-    // La FK de base de datos solo garantiza que la fila existe, no que es de la misma empresa
-    // que el asiento (hallazgo de tenant-isolation) — sin esto, un caller podía contabilizar
-    // contra una cuenta/centro de costo/tercero de otra empresa. Se agrupa por id distinto en
-    // vez de consultar por línea (antipatterns-architecture: queries en loop).
     private async Task EnsureLineReferencesBelongToCompanyAsync(long companyId, IReadOnlyList<JournalEntryLineRequest> lines, CancellationToken cancellationToken)
     {
         var accountIds = lines.Select(l => l.AccountId).Distinct().ToList();

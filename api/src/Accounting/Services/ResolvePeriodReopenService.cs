@@ -1,3 +1,4 @@
+using Accounting.Domain.Enums;
 using Accounting.DTOs;
 
 namespace Accounting.Services;
@@ -6,11 +7,13 @@ public sealed class ResolvePeriodReopenService
 {
     private readonly IPeriodReopenRequestRepository _reopenRequests;
     private readonly IAccountingPeriodRepository _periods;
+    private readonly IAuditTrailWriter _auditTrail;
 
-    public ResolvePeriodReopenService(IPeriodReopenRequestRepository reopenRequests, IAccountingPeriodRepository periods)
+    public ResolvePeriodReopenService(IPeriodReopenRequestRepository reopenRequests, IAccountingPeriodRepository periods, IAuditTrailWriter auditTrail)
     {
         _reopenRequests = reopenRequests;
         _periods = periods;
+        _auditTrail = auditTrail;
     }
 
     public async Task<PeriodReopenRequestResult> ResolveAsync(ResolvePeriodReopenRequest request, CancellationToken cancellationToken)
@@ -25,14 +28,18 @@ public sealed class ResolvePeriodReopenService
             var period = await _periods.FindByIdAsync(request.CompanyId, reopenRequest.AccountingPeriodId, cancellationToken)
                 ?? throw new InvalidOperationException($"Accounting period {reopenRequest.AccountingPeriodId} not found.");
             period.Reopen();
-            await _periods.UpdateAsync(period, cancellationToken);
         }
         else
         {
             reopenRequest.Reject(request.ResolvedBy, DateTimeOffset.UtcNow, request.Notes);
         }
 
-        await _reopenRequests.UpdateAsync(reopenRequest, cancellationToken);
+        _auditTrail.Record(AuditOperation.PeriodReopenResolved, request.CompanyId, request.ResolvedBy, reopenRequest, DateTimeOffset.UtcNow, request.Notes);
+
+        // Un solo SaveChangesAsync (en transaccion explicita) para la solicitud, el periodo
+        // reabierto si aplica, y la auditoria — antes eran 2 SaveChangesAsync separados
+        // (ver tasks/plan-auditoria.md, hallazgo de la seccion 2).
+        await _reopenRequests.SaveResolutionAsync(cancellationToken);
 
         return RequestPeriodReopenService.ToResult(reopenRequest);
     }

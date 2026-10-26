@@ -125,6 +125,35 @@ internal sealed class FakeCurrencyRepository : ICurrencyRepository
         Task.FromResult<IReadOnlyList<Currency>>(Currencies.Where(c => codes.Contains(c.Code)).ToList());
 }
 
+internal sealed class FakePeriodReopenRequestRepository : IPeriodReopenRequestRepository
+{
+    public List<PeriodReopenRequest> Requests { get; } = new();
+
+    public Task AddAsync(PeriodReopenRequest request, CancellationToken cancellationToken)
+    {
+        Requests.Add(request);
+        return Task.CompletedTask;
+    }
+
+    public Task<PeriodReopenRequest?> FindByIdAsync(long companyId, long id, CancellationToken cancellationToken) =>
+        Task.FromResult(Requests.FirstOrDefault(r => r.CompanyId == companyId && r.Id == id));
+
+    public Task<PeriodReopenRequest?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
+        Task.FromResult(Requests.FirstOrDefault(r => r.CompanyId == companyId && r.PublicId == publicId));
+
+    public Task UpdateAsync(PeriodReopenRequest request, CancellationToken cancellationToken) => Task.CompletedTask;
+
+    public Task SaveResolutionAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+}
+
+internal sealed class FakeAuditTrailWriter : IAuditTrailWriter
+{
+    public List<(AuditOperation Operation, long CompanyId, string Actor, object AuditedEntity, string? Notes)> Records { get; } = new();
+
+    public void Record(AuditOperation operation, long companyId, string actor, object auditedEntity, DateTimeOffset occurredAt, string? notes = null) =>
+        Records.Add((operation, companyId, actor, auditedEntity, notes));
+}
+
 internal sealed class FakeAccountBalanceSnapshotRepository : IAccountBalanceSnapshotRepository
 {
     public List<AccountBalanceSnapshot> Snapshots { get; } = new();

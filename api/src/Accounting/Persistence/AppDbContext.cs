@@ -28,6 +28,7 @@ public sealed class AppDbContext : DbContext
     public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
     public DbSet<AccountBalanceSnapshot> AccountBalanceSnapshots => Set<AccountBalanceSnapshot>();
     public DbSet<PeriodReopenRequest> PeriodReopenRequests => Set<PeriodReopenRequest>();
+    public DbSet<AuditTrailEntry> AuditTrailEntries => Set<AuditTrailEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

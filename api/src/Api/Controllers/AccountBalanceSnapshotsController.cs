@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Accounting.DTOs;
 using Accounting.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -31,9 +33,11 @@ public sealed class AccountBalanceSnapshotsController(
             return NotFoundProblem("Cuenta no encontrada");
 
         var result = await recalculateSnapshot.RecalculateAsync(
-            new RecalculateAccountBalanceSnapshotRequest(companyId, period.Id, account.Id), cancellationToken);
+            new RecalculateAccountBalanceSnapshotRequest(companyId, period.Id, account.Id, TriggeredByFromToken()), cancellationToken);
         return Ok(result);
     }
+
+    private string TriggeredByFromToken() => User.FindFirstValue(JwtRegisteredClaimNames.Sub)!;
 
     private ObjectResult NotFoundProblem(string title) => new(new ProblemDetails
     {

@@ -110,7 +110,7 @@ public sealed class CompanyIsolationTests : IAsyncLifetime
 
         var service = new PostJournalEntryService(
             new JournalEntryRepository(contextB), new AccountingPeriodRepository(contextB), new VoucherTypeRepository(contextB),
-            new AccountRepository(contextB), new CostCenterRepository(contextB), new PartyRepository(contextB));
+            new AccountRepository(contextB), new CostCenterRepository(contextB), new PartyRepository(contextB), new AuditTrailWriter(contextB));
 
         // companyB intenta contabilizar contra una cuenta que en realidad es de companyA.
         var request = new PostJournalEntryRequest(
@@ -173,7 +173,7 @@ public sealed class CompanyIsolationTests : IAsyncLifetime
 
         var service = new PostJournalEntryService(
             new JournalEntryRepository(context), new AccountingPeriodRepository(context), new VoucherTypeRepository(context),
-            new AccountRepository(context), new CostCenterRepository(context), new PartyRepository(context));
+            new AccountRepository(context), new CostCenterRepository(context), new PartyRepository(context), new AuditTrailWriter(context));
 
         var request = new PostJournalEntryRequest(
             companyId, voucherType.Id, period.Id, new DateOnly(2026, 1, 15), $"Entry for company {companyId}", "tester",

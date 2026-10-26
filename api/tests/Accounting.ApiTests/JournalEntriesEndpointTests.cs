@@ -29,7 +29,8 @@ public sealed class JournalEntriesEndpointTests : IClassFixture<AccountingApiFac
     }
 
     private sealed record Fixture(string CompanyPublicId, string Jwt, long CompanyId, long VoucherTypeId, long PeriodId,
-        Guid VoucherTypePublicId, Guid PeriodPublicId, Guid DebitAccountPublicId, Guid CreditAccountPublicId);
+        Guid VoucherTypePublicId, Guid PeriodPublicId, Guid DebitAccountPublicId, Guid CreditAccountPublicId,
+        Guid ThirdAccountPublicId, long ThirdAccountId, Guid CostCenterPublicId, long CostCenterId, Guid PartyPublicId, long PartyId);
 
     private async Task<Fixture> SeedAsync(HttpClient client, string emailSuffix)
     {
@@ -67,9 +68,14 @@ public sealed class JournalEntriesEndpointTests : IClassFixture<AccountingApiFac
 
         var debitAccount = Account.Create(company.CompanyId, $"1000-{emailSuffix}", "Cash", AccountNature.Debit, AccountType.Asset, null, true);
         var creditAccount = Account.Create(company.CompanyId, $"4000-{emailSuffix}", "Revenue", AccountNature.Credit, AccountType.Revenue, null, true);
+        var thirdAccount = Account.Create(company.CompanyId, $"4100-{emailSuffix}", "Other revenue", AccountNature.Credit, AccountType.Revenue, null, true);
+        var costCenter = CostCenter.Create(company.CompanyId, $"CC-{emailSuffix}", "Sales");
+        var party = Party.Create(company.CompanyId, $"P-{emailSuffix}", "Acme Client");
         var voucherType = VoucherType.Create(company.CompanyId, $"GEN-{emailSuffix}", "General", VoucherNumberingMode.Automatic);
         var period = AccountingPeriod.Create(company.CompanyId, $"2026-01-{emailSuffix}", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31));
-        context.Accounts.AddRange(debitAccount, creditAccount);
+        context.Accounts.AddRange(debitAccount, creditAccount, thirdAccount);
+        context.CostCenters.Add(costCenter);
+        context.Parties.Add(party);
         context.VoucherTypes.Add(voucherType);
         context.AccountingPeriods.Add(period);
         await context.SaveChangesAsync();
@@ -80,12 +86,35 @@ public sealed class JournalEntriesEndpointTests : IClassFixture<AccountingApiFac
 
         return new Fixture(
             company.CompanyPublicId.ToString(), loginBody!.AccessToken, company.CompanyId, voucherType.Id, period.Id,
-            voucherType.PublicId, period.PublicId, debitAccount.PublicId, creditAccount.PublicId);
+            voucherType.PublicId, period.PublicId, debitAccount.PublicId, creditAccount.PublicId,
+            thirdAccount.PublicId, thirdAccount.Id, costCenter.PublicId, costCenter.Id, party.PublicId, party.Id);
     }
 
     private sealed class FixedCompanyContext(long companyId) : Shared.ICurrentCompanyContext
     {
         public long CompanyId => companyId;
+    }
+
+    private AppDbContext NewContext(long companyId)
+    {
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_environment.PostgresConnectionString);
+        dataSourceBuilder.MapEnum<AccountNature>("naturaleza_cuenta");
+        dataSourceBuilder.MapEnum<AccountType>("tipo_cuenta");
+        dataSourceBuilder.MapEnum<PeriodStatus>("estado_periodo");
+        dataSourceBuilder.MapEnum<JournalEntryStatus>("estado_asiento");
+        var dataSource = dataSourceBuilder.Build();
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseNpgsql(dataSource, o =>
+            {
+                o.MapEnum<AccountNature>("naturaleza_cuenta");
+                o.MapEnum<AccountType>("tipo_cuenta");
+                o.MapEnum<PeriodStatus>("estado_periodo");
+                o.MapEnum<JournalEntryStatus>("estado_asiento");
+            })
+            .Options;
+
+        return new AppDbContext(options, new FixedCompanyContext(companyId));
     }
 
     private static HttpRequestMessage PostEntryRequest(Fixture fixture, object body) =>
@@ -231,6 +260,47 @@ public sealed class JournalEntriesEndpointTests : IClassFixture<AccountingApiFac
         var response = await client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    // Regresión del fix de batch-resolution (ResolveLinesAsync): con 3 líneas y referencias
+    // distintas por línea, confirma que cada línea persiste con su propia cuenta/centro de
+    // costo/tercero — no que el batch por diccionario haya mezclado la línea 1 con la 3.
+    [Fact]
+    public async Task Post_WithMultipleLinesAndMixedReferences_ResolvesEachLineToItsOwnAccount()
+    {
+        using var client = _factory.CreateClient();
+        var fixture = await SeedAsync(client, "post-multiline");
+
+        var body = new
+        {
+            VoucherTypePublicId = fixture.VoucherTypePublicId,
+            AccountingPeriodPublicId = fixture.PeriodPublicId,
+            EntryDate = new DateOnly(2026, 1, 15),
+            Description = "Multi-line with mixed references",
+            Lines = new object[]
+            {
+                new { AccountPublicId = fixture.DebitAccountPublicId, CurrencyCode = "USD", DebitAmount = 100m, CreditAmount = 0m },
+                new { AccountPublicId = fixture.CreditAccountPublicId, CostCenterPublicId = fixture.CostCenterPublicId, CurrencyCode = "USD", DebitAmount = 0m, CreditAmount = 60m },
+                new { AccountPublicId = fixture.ThirdAccountPublicId, PartyPublicId = fixture.PartyPublicId, CurrencyCode = "USD", DebitAmount = 0m, CreditAmount = 40m }
+            }
+        };
+
+        var response = await client.SendAsync(PostEntryRequest(fixture, body));
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<JournalEntryResult>();
+
+        await using var context = NewContext(fixture.CompanyId);
+        var entry = await context.JournalEntries.Include(e => e.Lines).FirstAsync(e => e.PublicId == result!.PublicId);
+        var lines = entry.Lines.OrderBy(l => l.LineNumber).ToList();
+
+        Assert.Equal(3, lines.Count);
+        Assert.Null(lines[0].CostCenterId);
+        Assert.Null(lines[0].PartyId);
+        Assert.Equal(fixture.CostCenterId, lines[1].CostCenterId);
+        Assert.Null(lines[1].PartyId);
+        Assert.Equal(fixture.PartyId, lines[2].PartyId);
+        Assert.Equal(fixture.ThirdAccountId, lines[2].AccountId);
+        Assert.Null(lines[2].CostCenterId);
     }
 
     [Fact]

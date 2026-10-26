@@ -16,4 +16,7 @@ public sealed class PartyRepository : IPartyRepository
 
     public Task<Party?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
         _context.Parties.AsNoTracking().FirstOrDefaultAsync(p => p.CompanyId == companyId && p.PublicId == publicId, cancellationToken);
+
+    public async Task<IReadOnlyList<Party>> FindManyByPublicIdAsync(long companyId, IReadOnlyCollection<Guid> publicIds, CancellationToken cancellationToken) =>
+        await _context.Parties.AsNoTracking().Where(p => p.CompanyId == companyId && publicIds.Contains(p.PublicId)).ToListAsync(cancellationToken);
 }

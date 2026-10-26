@@ -61,7 +61,7 @@ public sealed class AccountBalanceSnapshotReconciliationTests : IAsyncLifetime
                 new VoucherTypeRepository(context),
                 new AccountRepository(context),
                 new CostCenterRepository(context),
-                new PartyRepository(context));
+                new PartyRepository(context), new AuditTrailWriter(context));
 
             var request = new PostJournalEntryRequest(
                 CompanyId, voucherTypeId, periodId, new DateOnly(2026, 1, 15), "Recon test", "tester",

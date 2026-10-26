@@ -66,7 +66,7 @@ public sealed class JournalEntryRepositoryTests : IAsyncLifetime
         var journalEntries = new JournalEntryRepository(context);
         var service = new PostJournalEntryService(
             journalEntries, new AccountingPeriodRepository(context), new VoucherTypeRepository(context),
-            new AccountRepository(context), new CostCenterRepository(context), new PartyRepository(context));
+            new AccountRepository(context), new CostCenterRepository(context), new PartyRepository(context), new AuditTrailWriter(context));
 
         var request = new PostJournalEntryRequest(
             companyId, voucherType.Id, period.Id, new DateOnly(2026, 1, 15), "Test entry", "tester",

@@ -125,6 +125,14 @@ internal sealed class FakeCurrencyRepository : ICurrencyRepository
         Task.FromResult<IReadOnlyList<Currency>>(Currencies.Where(c => codes.Contains(c.Code)).ToList());
 }
 
+internal sealed class FakeAuditTrailWriter : IAuditTrailWriter
+{
+    public List<(AuditOperation Operation, long CompanyId, string Actor, object AuditedEntity, string? Notes)> Records { get; } = new();
+
+    public void Record(AuditOperation operation, long companyId, string actor, object auditedEntity, DateTimeOffset occurredAt, string? notes = null) =>
+        Records.Add((operation, companyId, actor, auditedEntity, notes));
+}
+
 internal sealed class FakeAccountBalanceSnapshotRepository : IAccountBalanceSnapshotRepository
 {
     public List<AccountBalanceSnapshot> Snapshots { get; } = new();

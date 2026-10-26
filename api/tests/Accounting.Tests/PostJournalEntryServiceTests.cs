@@ -30,13 +30,14 @@ public class PostJournalEntryServiceTests
         SourceModule: null,
         SourceReference: sourceReference);
 
-    private static (PostJournalEntryService Service, FakeJournalEntryRepository Entries) CreateService(
+    private static (PostJournalEntryService Service, FakeJournalEntryRepository Entries, FakeAuditTrailWriter AuditTrail) CreateService(
         PeriodStatus periodStatus, VoucherNumberingMode numberingMode, bool seedAccount = true, bool accountAllowsPosting = true)
     {
         var entries = new FakeJournalEntryRepository();
         var periods = new FakeAccountingPeriodRepository();
         var voucherTypes = new FakeVoucherTypeRepository();
         var accounts = new FakeAccountRepository();
+        var auditTrail = new FakeAuditTrailWriter();
 
         var period = AccountingPeriod.Create(CompanyId, "2026-01", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31));
         if (periodStatus == PeriodStatus.Closed)
@@ -48,13 +49,13 @@ public class PostJournalEntryServiceTests
             accounts.Accounts.Add(Account.Create(CompanyId, "1000", "Cash", AccountNature.Debit, AccountType.Asset, null, accountAllowsPosting));
 
         return (new PostJournalEntryService(
-            entries, periods, voucherTypes, accounts, new FakeCostCenterRepository(), new FakePartyRepository()), entries);
+            entries, periods, voucherTypes, accounts, new FakeCostCenterRepository(), new FakePartyRepository(), auditTrail), entries, auditTrail);
     }
 
     [Fact]
     public async Task PostAsync_WhenPeriodClosed_ThrowsAccountingPeriodClosedException()
     {
-        var (service, _) = CreateService(PeriodStatus.Closed, VoucherNumberingMode.Automatic);
+        var (service, _, _) = CreateService(PeriodStatus.Closed, VoucherNumberingMode.Automatic);
 
         await Assert.ThrowsAsync<AccountingPeriodClosedException>(
             () => service.PostAsync(BuildRequest(), CancellationToken.None));
@@ -63,7 +64,7 @@ public class PostJournalEntryServiceTests
     [Fact]
     public async Task PostAsync_RetriedWithSameContent_DoesNotCreateASecondEntry()
     {
-        var (service, entries) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic);
+        var (service, entries, auditTrail) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic);
 
         var first = await service.PostAsync(BuildRequest(), CancellationToken.None);
         var second = await service.PostAsync(BuildRequest(), CancellationToken.None);
@@ -76,7 +77,7 @@ public class PostJournalEntryServiceTests
     [Fact]
     public async Task PostAsync_RetriedWithDifferentContent_ThrowsIdempotencyConflict()
     {
-        var (service, _) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic);
+        var (service, _, _) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic);
 
         await service.PostAsync(BuildRequest(debit: 100m), CancellationToken.None);
 
@@ -89,7 +90,7 @@ public class PostJournalEntryServiceTests
     {
         // Antes de este check, una FK por sí sola solo probaba que la cuenta existía en algún
         // lado, no que fuera de la misma empresa que el asiento (hallazgo de tenant-isolation).
-        var (service, _) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic, seedAccount: false);
+        var (service, _, _) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic, seedAccount: false);
 
         await Assert.ThrowsAsync<JournalEntryLineReferenceNotFoundException>(
             () => service.PostAsync(BuildRequest(), CancellationToken.None));
@@ -98,9 +99,24 @@ public class PostJournalEntryServiceTests
     [Fact]
     public async Task PostAsync_WithAccountThatDoesNotAllowPosting_ThrowsAccountDoesNotAllowPosting()
     {
-        var (service, _) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic, accountAllowsPosting: false);
+        var (service, _, _) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic, accountAllowsPosting: false);
 
         await Assert.ThrowsAsync<AccountDoesNotAllowPostingException>(
             () => service.PostAsync(BuildRequest(), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task PostAsync_OnSuccess_RecordsJournalEntryPostedInAuditTrail()
+    {
+        var (service, _, auditTrail) = CreateService(PeriodStatus.Open, VoucherNumberingMode.Automatic);
+
+        var result = await service.PostAsync(BuildRequest(), CancellationToken.None);
+
+        var record = Assert.Single(auditTrail.Records);
+        Assert.Equal(AuditOperation.JournalEntryPosted, record.Operation);
+        Assert.Equal(CompanyId, record.CompanyId);
+        Assert.Equal("tester", record.Actor);
+        Assert.IsType<JournalEntry>(record.AuditedEntity);
+        Assert.Equal(result.PublicId, ((JournalEntry)record.AuditedEntity).PublicId);
     }
 }

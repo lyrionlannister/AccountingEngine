@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<ICostCenterRepository, CostCenterRepository>();
         services.AddScoped<IPartyRepository, PartyRepository>();
         services.AddScoped<ICurrencyRepository, CurrencyRepository>();
+        services.AddScoped<IAuditTrailWriter, AuditTrailWriter>();
 
         services.AddScoped<PostJournalEntryService>();
         services.AddScoped<ReverseJournalEntryService>();

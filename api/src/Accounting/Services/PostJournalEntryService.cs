@@ -12,6 +12,7 @@ public sealed class PostJournalEntryService
     private readonly IAccountRepository _accounts;
     private readonly ICostCenterRepository _costCenters;
     private readonly IPartyRepository _parties;
+    private readonly IAuditTrailWriter _auditTrail;
 
     public PostJournalEntryService(
         IJournalEntryRepository journalEntries,
@@ -19,7 +20,8 @@ public sealed class PostJournalEntryService
         IVoucherTypeRepository voucherTypes,
         IAccountRepository accounts,
         ICostCenterRepository costCenters,
-        IPartyRepository parties)
+        IPartyRepository parties,
+        IAuditTrailWriter auditTrail)
     {
         _journalEntries = journalEntries;
         _periods = periods;
@@ -27,6 +29,7 @@ public sealed class PostJournalEntryService
         _accounts = accounts;
         _costCenters = costCenters;
         _parties = parties;
+        _auditTrail = auditTrail;
     }
 
     public async Task<JournalEntryResult> PostAsync(PostJournalEntryRequest request, CancellationToken cancellationToken)
@@ -60,6 +63,10 @@ public sealed class PostJournalEntryService
 
         foreach (var line in request.Lines)
             entry.AddLine(line.AccountId, line.CostCenterId, line.PartyId, line.CurrencyId, line.DebitAmount, line.CreditAmount, line.Description);
+
+        // Antes de persistir: el fixup del FK a esta fila (todavía sin Id) depende de que
+        // ambas entidades viajen trackeadas en el mismo SaveChangesAsync (ver AuditTrailEntry).
+        _auditTrail.Record(AuditOperation.JournalEntryPosted, request.CompanyId, request.PostedBy, entry, DateTimeOffset.UtcNow);
 
         await JournalEntryPoster.PostAsync(_journalEntries, _voucherTypes, entry, request.SequenceNumber, request.PostedBy, cancellationToken);
 

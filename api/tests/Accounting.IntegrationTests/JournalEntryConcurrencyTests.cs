@@ -69,7 +69,7 @@ public sealed class JournalEntryConcurrencyTests : IAsyncLifetime
             new VoucherTypeRepository(context),
             new AccountRepository(context),
             new CostCenterRepository(context),
-            new PartyRepository(context));
+            new PartyRepository(context), new AuditTrailWriter(context));
 
         try
         {

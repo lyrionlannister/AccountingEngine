@@ -67,7 +67,7 @@ public sealed class PostJournalEntryServiceTests : IAsyncLifetime
         var voucherTypes = new VoucherTypeRepository(context);
         var service = new PostJournalEntryService(
             journalEntries, periods, voucherTypes,
-            new AccountRepository(context), new CostCenterRepository(context), new PartyRepository(context));
+            new AccountRepository(context), new CostCenterRepository(context), new PartyRepository(context), new AuditTrailWriter(context));
 
         var request = new PostJournalEntryRequest(
             companyId,
@@ -91,6 +91,11 @@ public sealed class PostJournalEntryServiceTests : IAsyncLifetime
 
         var count = await context.JournalEntries.CountAsync(e => e.CompanyId == companyId && e.SourceReference == "RETRY-1");
         Assert.Equal(1, count);
+
+        // El reintento retorna temprano (misma referencia de origen) antes de llamar al
+        // escritor de auditoria: no debe quedar una segunda fila por el mismo posteo.
+        var auditCount = await context.AuditTrailEntries.CountAsync(a => a.CompanyId == companyId);
+        Assert.Equal(1, auditCount);
     }
 
     [Fact]
@@ -139,7 +144,7 @@ public sealed class PostJournalEntryServiceTests : IAsyncLifetime
         var voucherTypes = new VoucherTypeRepository(context);
         var service = new PostJournalEntryService(
             journalEntries, periods, voucherTypes,
-            new AccountRepository(context), new CostCenterRepository(context), new PartyRepository(context));
+            new AccountRepository(context), new CostCenterRepository(context), new PartyRepository(context), new AuditTrailWriter(context));
 
         JournalEntryLineRequest[] Lines() => new[]
         {
@@ -158,5 +163,11 @@ public sealed class PostJournalEntryServiceTests : IAsyncLifetime
 
         await Assert.ThrowsAsync<JournalEntrySequenceConflictException>(
             () => service.PostAsync(secondRequest, CancellationToken.None));
+
+        // La fila de auditoria del intento fallido viaja en el mismo SaveChangesAsync que el
+        // insert del asiento: si ese SaveChanges falla, la transaccion de JournalEntryRepository
+        // nunca hace commit y no debe quedar fila de auditoria para el segundo intento.
+        var auditCount = await context.AuditTrailEntries.CountAsync(a => a.CompanyId == companyId);
+        Assert.Equal(1, auditCount);
     }
 }

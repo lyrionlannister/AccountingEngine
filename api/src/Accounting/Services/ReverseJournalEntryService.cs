@@ -8,15 +8,18 @@ public sealed class ReverseJournalEntryService
     private readonly IJournalEntryRepository _journalEntries;
     private readonly IAccountingPeriodRepository _periods;
     private readonly IVoucherTypeRepository _voucherTypes;
+    private readonly IAuditTrailWriter _auditTrail;
 
     public ReverseJournalEntryService(
         IJournalEntryRepository journalEntries,
         IAccountingPeriodRepository periods,
-        IVoucherTypeRepository voucherTypes)
+        IVoucherTypeRepository voucherTypes,
+        IAuditTrailWriter auditTrail)
     {
         _journalEntries = journalEntries;
         _periods = periods;
         _voucherTypes = voucherTypes;
+        _auditTrail = auditTrail;
     }
 
     public async Task<JournalEntryResult> ReverseAsync(ReverseJournalEntryRequest request, CancellationToken cancellationToken)
@@ -32,6 +35,8 @@ public sealed class ReverseJournalEntryService
             throw new ArgumentException("Entry date is outside the accounting period.", nameof(request));
 
         var reversal = original.Reverse(request.EntryDate, request.Description);
+
+        _auditTrail.Record(AuditOperation.JournalEntryReversed, request.CompanyId, request.PostedBy, reversal, DateTimeOffset.UtcNow);
 
         await JournalEntryPoster.PostAsync(_journalEntries, _voucherTypes, reversal, request.SequenceNumber, request.PostedBy, cancellationToken);
 

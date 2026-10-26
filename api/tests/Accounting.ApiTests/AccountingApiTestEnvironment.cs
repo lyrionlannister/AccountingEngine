@@ -32,6 +32,10 @@ public sealed class AccountingApiTestEnvironment : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        // Leida por la migracion AddAppRoleAndRevokeAuditPrivileges (CREATE/ALTER ROLE
+        // motor_contable_app) antes de migrar Accounting mas abajo.
+        Environment.SetEnvironmentVariable("ACCOUNTING_APP_DB_PASSWORD", "test-app-role-password");
+
         await Task.WhenAll(_postgres.StartAsync(), _redis.StartAsync());
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(PostgresConnectionString);

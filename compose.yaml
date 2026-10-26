@@ -46,7 +46,13 @@ services:
     container_name: accounting-engine-api
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      # Rol de aplicacion (motor_contable_app), no el propietario (POSTGRES_USER) que corre las
+      # migraciones — sin esto, "revocar UPDATE/DELETE sobre auditoria_contable" no es real
+      # porque el propietario de una tabla siempre puede editarla/borrarla. Ver
+      # tasks/plan-auditoria.md seccion 3.3. El rol se crea/actualiza en la migracion
+      # AddAppRoleAndRevokeAuditPrivileges — debe aplicarse (dotnet ef database update, con el
+      # rol propietario) antes de levantar "api" con este connection string.
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=motor_contable_app;Password=${ACCOUNTING_APP_DB_PASSWORD}
       ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD}
       Jwt__SigningKey: ${JWT_SIGNING_KEY}
     depends_on:

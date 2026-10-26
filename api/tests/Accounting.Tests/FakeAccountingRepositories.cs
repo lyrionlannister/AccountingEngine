@@ -76,6 +76,10 @@ internal sealed class FakeAccountRepository : IAccountRepository
 
     public Task<Account?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
         Task.FromResult(Accounts.FirstOrDefault(a => a.CompanyId == companyId && a.PublicId == publicId));
+
+    public Task<IReadOnlyList<Account>> FindManyByPublicIdAsync(long companyId, IReadOnlyCollection<Guid> publicIds, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Account>>(
+            Accounts.Where(a => a.CompanyId == companyId && publicIds.Contains(a.PublicId)).ToList());
 }
 
 internal sealed class FakeCostCenterRepository : ICostCenterRepository
@@ -88,6 +92,10 @@ internal sealed class FakeCostCenterRepository : ICostCenterRepository
 
     public Task<CostCenter?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
         Task.FromResult(CostCenters.FirstOrDefault(c => c.CompanyId == companyId && c.PublicId == publicId));
+
+    public Task<IReadOnlyList<CostCenter>> FindManyByPublicIdAsync(long companyId, IReadOnlyCollection<Guid> publicIds, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<CostCenter>>(
+            CostCenters.Where(c => c.CompanyId == companyId && publicIds.Contains(c.PublicId)).ToList());
 }
 
 internal sealed class FakePartyRepository : IPartyRepository
@@ -100,6 +108,10 @@ internal sealed class FakePartyRepository : IPartyRepository
 
     public Task<Party?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
         Task.FromResult(Parties.FirstOrDefault(p => p.CompanyId == companyId && p.PublicId == publicId));
+
+    public Task<IReadOnlyList<Party>> FindManyByPublicIdAsync(long companyId, IReadOnlyCollection<Guid> publicIds, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Party>>(
+            Parties.Where(p => p.CompanyId == companyId && publicIds.Contains(p.PublicId)).ToList());
 }
 
 internal sealed class FakeCurrencyRepository : ICurrencyRepository
@@ -108,6 +120,9 @@ internal sealed class FakeCurrencyRepository : ICurrencyRepository
 
     public Task<Currency?> FindByCodeAsync(string code, CancellationToken cancellationToken) =>
         Task.FromResult(Currencies.FirstOrDefault(c => c.Code == code));
+
+    public Task<IReadOnlyList<Currency>> FindManyByCodeAsync(IReadOnlyCollection<string> codes, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Currency>>(Currencies.Where(c => codes.Contains(c.Code)).ToList());
 }
 
 internal sealed class FakeAccountBalanceSnapshotRepository : IAccountBalanceSnapshotRepository

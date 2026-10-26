@@ -71,9 +71,7 @@ public sealed class JournalEntriesController(
             var period = await accountingPeriods.FindByPublicIdAsync(companyId, body.AccountingPeriodPublicId, cancellationToken)
                 ?? throw new ReferenceNotFoundException("AccountingPeriod");
 
-            var lines = new List<JournalEntryLineRequest>(body.Lines.Count);
-            foreach (var line in body.Lines)
-                lines.Add(await ResolveLineAsync(companyId, line, cancellationToken));
+            var lines = await ResolveLinesAsync(companyId, body.Lines, cancellationToken);
 
             var request = new PostJournalEntryRequest(
                 companyId,
@@ -110,31 +108,55 @@ public sealed class JournalEntriesController(
         return Created(string.Empty, result);
     }
 
-    private async Task<JournalEntryLineRequest> ResolveLineAsync(long companyId, JournalEntryLineBody line, CancellationToken cancellationToken)
+    // Batch por tipo de referencia (4 queries fijas, no 4 por línea): antipatterns-architecture
+    // marca "queries en loop" — resolver cada línea por separado multiplicaba los round-trips
+    // por el número de líneas del asiento.
+    private async Task<IReadOnlyList<JournalEntryLineRequest>> ResolveLinesAsync(
+        long companyId, IReadOnlyList<JournalEntryLineBody> lines, CancellationToken cancellationToken)
     {
-        var account = await accounts.FindByPublicIdAsync(companyId, line.AccountPublicId, cancellationToken)
-            ?? throw new ReferenceNotFoundException("Account");
+        var accountIds = lines.Select(l => l.AccountPublicId).Distinct().ToList();
+        var costCenterIds = lines.Where(l => l.CostCenterPublicId is not null).Select(l => l.CostCenterPublicId!.Value).Distinct().ToList();
+        var partyIds = lines.Where(l => l.PartyPublicId is not null).Select(l => l.PartyPublicId!.Value).Distinct().ToList();
+        var currencyCodes = lines.Select(l => l.CurrencyCode).Distinct().ToList();
 
-        long? costCenterId = null;
-        if (line.CostCenterPublicId is { } costCenterPublicId)
+        var accountsById = (await accounts.FindManyByPublicIdAsync(companyId, accountIds, cancellationToken)).ToDictionary(a => a.PublicId);
+        var costCentersById = costCenterIds.Count == 0
+            ? []
+            : (await costCenters.FindManyByPublicIdAsync(companyId, costCenterIds, cancellationToken)).ToDictionary(c => c.PublicId);
+        var partiesById = partyIds.Count == 0
+            ? []
+            : (await parties.FindManyByPublicIdAsync(companyId, partyIds, cancellationToken)).ToDictionary(p => p.PublicId);
+        var currenciesByCode = (await currencies.FindManyByCodeAsync(currencyCodes, cancellationToken)).ToDictionary(c => c.Code);
+
+        var resolved = new List<JournalEntryLineRequest>(lines.Count);
+        foreach (var line in lines)
         {
-            var costCenter = await costCenters.FindByPublicIdAsync(companyId, costCenterPublicId, cancellationToken)
-                ?? throw new ReferenceNotFoundException("CostCenter");
-            costCenterId = costCenter.Id;
+            if (!accountsById.TryGetValue(line.AccountPublicId, out var account))
+                throw new ReferenceNotFoundException("Account");
+
+            long? costCenterId = null;
+            if (line.CostCenterPublicId is { } costCenterPublicId)
+            {
+                if (!costCentersById.TryGetValue(costCenterPublicId, out var costCenter))
+                    throw new ReferenceNotFoundException("CostCenter");
+                costCenterId = costCenter.Id;
+            }
+
+            long? partyId = null;
+            if (line.PartyPublicId is { } partyPublicId)
+            {
+                if (!partiesById.TryGetValue(partyPublicId, out var party))
+                    throw new ReferenceNotFoundException("Party");
+                partyId = party.Id;
+            }
+
+            if (!currenciesByCode.TryGetValue(line.CurrencyCode, out var currency))
+                throw new ReferenceNotFoundException("Currency");
+
+            resolved.Add(new JournalEntryLineRequest(account.Id, costCenterId, partyId, currency.Id, line.DebitAmount, line.CreditAmount, line.Description));
         }
 
-        long? partyId = null;
-        if (line.PartyPublicId is { } partyPublicId)
-        {
-            var party = await parties.FindByPublicIdAsync(companyId, partyPublicId, cancellationToken)
-                ?? throw new ReferenceNotFoundException("Party");
-            partyId = party.Id;
-        }
-
-        var currency = await currencies.FindByCodeAsync(line.CurrencyCode, cancellationToken)
-            ?? throw new ReferenceNotFoundException("Currency");
-
-        return new JournalEntryLineRequest(account.Id, costCenterId, partyId, currency.Id, line.DebitAmount, line.CreditAmount, line.Description);
+        return resolved;
     }
 
     private string PostedByFromToken() => User.FindFirstValue(JwtRegisteredClaimNames.Sub)!;

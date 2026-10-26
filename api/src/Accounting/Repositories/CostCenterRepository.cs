@@ -16,4 +16,7 @@ public sealed class CostCenterRepository : ICostCenterRepository
 
     public Task<CostCenter?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken) =>
         _context.CostCenters.AsNoTracking().FirstOrDefaultAsync(c => c.CompanyId == companyId && c.PublicId == publicId, cancellationToken);
+
+    public async Task<IReadOnlyList<CostCenter>> FindManyByPublicIdAsync(long companyId, IReadOnlyCollection<Guid> publicIds, CancellationToken cancellationToken) =>
+        await _context.CostCenters.AsNoTracking().Where(c => c.CompanyId == companyId && publicIds.Contains(c.PublicId)).ToListAsync(cancellationToken);
 }

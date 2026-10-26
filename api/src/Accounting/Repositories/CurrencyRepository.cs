@@ -13,4 +13,7 @@ public sealed class CurrencyRepository : ICurrencyRepository
 
     public Task<Currency?> FindByCodeAsync(string code, CancellationToken cancellationToken) =>
         _context.Currencies.AsNoTracking().FirstOrDefaultAsync(c => c.Code == code, cancellationToken);
+
+    public async Task<IReadOnlyList<Currency>> FindManyByCodeAsync(IReadOnlyCollection<string> codes, CancellationToken cancellationToken) =>
+        await _context.Currencies.AsNoTracking().Where(c => codes.Contains(c.Code)).ToListAsync(cancellationToken);
 }

@@ -7,4 +7,6 @@ public interface IAccountRepository
     Task<IReadOnlyList<Account>> FindManyByIdAsync(long companyId, IReadOnlyCollection<long> ids, CancellationToken cancellationToken);
 
     Task<Account?> FindByPublicIdAsync(long companyId, Guid publicId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<Account>> FindManyByPublicIdAsync(long companyId, IReadOnlyCollection<Guid> publicIds, CancellationToken cancellationToken);
 }

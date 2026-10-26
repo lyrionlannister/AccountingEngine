@@ -205,6 +205,84 @@ namespace Accounting.Persistence.Migrations
                     b.ToTable("periodos_contables", (string)null);
                 });
 
+            modelBuilder.Entity("Accounting.Domain.AuditTrailEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("AccountBalanceSnapshotId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("saldo_cuenta_id");
+
+                    b.Property<long?>("AccountingPeriodId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("periodo_contable_id");
+
+                    b.Property<string>("Actor")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("actor");
+
+                    b.Property<long>("CompanyId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("empresa_id");
+
+                    b.Property<long?>("JournalEntryId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("asiento_id");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notas");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ocurrido_en");
+
+                    b.Property<string>("Operation")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("operacion");
+
+                    b.Property<long?>("PeriodReopenRequestId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("solicitud_reapertura_id");
+
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id_publico")
+                        .HasDefaultValueSql("uuidv7()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountBalanceSnapshotId");
+
+                    b.HasIndex("AccountingPeriodId");
+
+                    b.HasIndex("JournalEntryId");
+
+                    b.HasIndex("PeriodReopenRequestId");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("CompanyId", "OccurredAt")
+                        .HasDatabaseName("ix_auditoria_contable_empresa_fecha");
+
+                    b.ToTable("auditoria_contable", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_auditoria_contable_una_referencia", "(CASE WHEN asiento_id IS NOT NULL THEN 1 ELSE 0 END) + (CASE WHEN periodo_contable_id IS NOT NULL THEN 1 ELSE 0 END) + (CASE WHEN solicitud_reapertura_id IS NOT NULL THEN 1 ELSE 0 END) + (CASE WHEN saldo_cuenta_id IS NOT NULL THEN 1 ELSE 0 END) = 1");
+                        });
+                });
+
             modelBuilder.Entity("Accounting.Domain.CostCenter", b =>
                 {
                     b.Property<long>("Id")
@@ -733,6 +811,41 @@ namespace Accounting.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_saldos_cuenta_periodo_contable");
+                });
+
+            modelBuilder.Entity("Accounting.Domain.AuditTrailEntry", b =>
+                {
+                    b.HasOne("Accounting.Domain.AccountBalanceSnapshot", "AccountBalanceSnapshot")
+                        .WithMany()
+                        .HasForeignKey("AccountBalanceSnapshotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_auditoria_contable_saldo_cuenta");
+
+                    b.HasOne("Accounting.Domain.AccountingPeriod", "AccountingPeriod")
+                        .WithMany()
+                        .HasForeignKey("AccountingPeriodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_auditoria_contable_periodo_contable");
+
+                    b.HasOne("Accounting.Domain.JournalEntry", "JournalEntry")
+                        .WithMany()
+                        .HasForeignKey("JournalEntryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_auditoria_contable_asiento");
+
+                    b.HasOne("Accounting.Domain.PeriodReopenRequest", "PeriodReopenRequest")
+                        .WithMany()
+                        .HasForeignKey("PeriodReopenRequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_auditoria_contable_solicitud_reapertura");
+
+                    b.Navigation("AccountBalanceSnapshot");
+
+                    b.Navigation("AccountingPeriod");
+
+                    b.Navigation("JournalEntry");
+
+                    b.Navigation("PeriodReopenRequest");
                 });
 
             modelBuilder.Entity("Accounting.Domain.ExchangeRate", b =>

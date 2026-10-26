@@ -19,7 +19,7 @@ public class RequestPeriodReopenServiceTests
 
         var reopenRequests = new FakePeriodReopenRequestRepository();
         var auditTrail = new FakeAuditTrailWriter();
-        var service = new RequestPeriodReopenService(periods, reopenRequests, auditTrail);
+        var service = new RequestPeriodReopenService(periods, reopenRequests, auditTrail, new FakeCurrentCompanyContext());
 
         await service.RequestAsync(
             new RequestPeriodReopenRequest(CompanyId, AccountingPeriodId: 0, "Corrección", "requester-1"),

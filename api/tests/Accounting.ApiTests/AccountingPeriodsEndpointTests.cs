@@ -30,7 +30,7 @@ public sealed class AccountingPeriodsEndpointTests : IClassFixture<AccountingApi
     }
 
     private sealed record Fixture(
-        string CompanyPublicId, string Jwt, long CompanyId,
+        string CompanyPublicId, string Jwt, long CompanyId, long CreatorUserId,
         Guid AutomaticVoucherTypePublicId, long ManualVoucherTypeId, Guid ManualVoucherTypePublicId,
         long PeriodId, Guid PeriodPublicId, Guid DebitAccountPublicId, Guid CreditAccountPublicId, Guid NonPostingAccountPublicId);
 
@@ -56,9 +56,31 @@ public sealed class AccountingPeriodsEndpointTests : IClassFixture<AccountingApi
         return new AppDbContext(options, new FixedCompanyContext(companyId));
     }
 
+    // La resolucion de una solicitud de reapertura no puede hacerla el mismo usuario que la pidio
+    // (segregacion de funciones, hallazgo de auditoria) — por eso las pruebas que resuelven una
+    // solicitud necesitan un segundo usuario Admin de la misma empresa.
+    private async Task<string> RegisterSecondAdminAndLoginAsync(long companyId, long creatorUserId, string suffix)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var email = $"period-{suffix}-resolver@acme.test";
+        var user = await scope.ServiceProvider.GetRequiredService<RegisterUserService>()
+            .RegisterAsync(new RegisterUserRequest(email, "s3cret-password"), CancellationToken.None);
+
+        await scope.ServiceProvider.GetRequiredService<AddMembershipService>().AddAsync(
+            new AddMembershipRequest(creatorUserId, user.Id, companyId, Companies.Domain.Enums.CompanyMembershipRole.Admin),
+            CancellationToken.None);
+
+        using var client = _factory.CreateClient();
+        var login = await client.PostAsJsonAsync("/api/auth/login", new AuthController.LoginBody(email, "s3cret-password"));
+        login.EnsureSuccessStatusCode();
+        var loginBody = await login.Content.ReadFromJsonAsync<AuthController.LoginResponse>();
+        return loginBody!.AccessToken;
+    }
+
     private sealed class FixedCompanyContext(long companyId) : Shared.ICurrentCompanyContext
     {
         public long CompanyId => companyId;
+        public string Role => "Admin";
     }
 
     private async Task<Fixture> SeedAsync(HttpClient client, string suffix)
@@ -93,7 +115,7 @@ public sealed class AccountingPeriodsEndpointTests : IClassFixture<AccountingApi
         var loginBody = await login.Content.ReadFromJsonAsync<AuthController.LoginResponse>();
 
         return new Fixture(
-            company.CompanyPublicId.ToString(), loginBody!.AccessToken, company.CompanyId,
+            company.CompanyPublicId.ToString(), loginBody!.AccessToken, company.CompanyId, user.Id,
             automaticVoucherType.PublicId, manualVoucherType.Id, manualVoucherType.PublicId,
             period.Id, period.PublicId, debitAccount.PublicId, creditAccount.PublicId, nonPostingAccount.PublicId);
     }
@@ -198,9 +220,10 @@ public sealed class AccountingPeriodsEndpointTests : IClassFixture<AccountingApi
         requestResponse.EnsureSuccessStatusCode();
         var reopenRequest = await requestResponse.Content.ReadFromJsonAsync<PeriodReopenRequestResult>();
 
+        var resolverJwt = await RegisterSecondAdminAndLoginAsync(fixture.CompanyId, fixture.CreatorUserId, "reopen-approve");
         var resolveResponse = await client.SendAsync(PostJsonRequest(
             $"/api/companies/{fixture.CompanyPublicId}/period-reopen-requests/{reopenRequest!.PublicId}/resolution",
-            fixture.Jwt, new { Approve = true }));
+            resolverJwt, new { Approve = true }));
 
         Assert.Equal(HttpStatusCode.OK, resolveResponse.StatusCode);
         var resolved = await resolveResponse.Content.ReadFromJsonAsync<PeriodReopenRequestResult>();
@@ -227,9 +250,10 @@ public sealed class AccountingPeriodsEndpointTests : IClassFixture<AccountingApi
             fixture.Jwt, new { Reason = "Just checking" }));
         var reopenRequest = await requestResponse.Content.ReadFromJsonAsync<PeriodReopenRequestResult>();
 
+        var resolverJwt = await RegisterSecondAdminAndLoginAsync(fixture.CompanyId, fixture.CreatorUserId, "reopen-reject");
         var resolveResponse = await client.SendAsync(PostJsonRequest(
             $"/api/companies/{fixture.CompanyPublicId}/period-reopen-requests/{reopenRequest!.PublicId}/resolution",
-            fixture.Jwt, new { Approve = false, Notes = "Not justified" }));
+            resolverJwt, new { Approve = false, Notes = "Not justified" }));
 
         Assert.Equal(HttpStatusCode.OK, resolveResponse.StatusCode);
         var resolved = await resolveResponse.Content.ReadFromJsonAsync<PeriodReopenRequestResult>();
@@ -242,6 +266,55 @@ public sealed class AccountingPeriodsEndpointTests : IClassFixture<AccountingApi
             new HttpRequestMessage(HttpMethod.Post, $"/api/companies/{fixture.CompanyPublicId}/accounting-periods/{fixture.PeriodPublicId}/closure"),
             fixture.Jwt));
         Assert.Equal(HttpStatusCode.InternalServerError, secondClose.StatusCode);
+    }
+
+    [Fact]
+    public async Task ResolveReopen_BySameUserWhoRequestedIt_Returns403()
+    {
+        using var client = _factory.CreateClient();
+        var fixture = await SeedAsync(client, "reopen-self");
+
+        await client.SendAsync(Authorized(
+            new HttpRequestMessage(HttpMethod.Post, $"/api/companies/{fixture.CompanyPublicId}/accounting-periods/{fixture.PeriodPublicId}/closure"),
+            fixture.Jwt));
+
+        var requestResponse = await client.SendAsync(PostJsonRequest(
+            $"/api/companies/{fixture.CompanyPublicId}/accounting-periods/{fixture.PeriodPublicId}/reopen-requests",
+            fixture.Jwt, new { Reason = "Self approval attempt" }));
+        var reopenRequest = await requestResponse.Content.ReadFromJsonAsync<PeriodReopenRequestResult>();
+
+        var resolveResponse = await client.SendAsync(PostJsonRequest(
+            $"/api/companies/{fixture.CompanyPublicId}/period-reopen-requests/{reopenRequest!.PublicId}/resolution",
+            fixture.Jwt, new { Approve = true }));
+
+        Assert.Equal(HttpStatusCode.Forbidden, resolveResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task Close_AsAccountant_Returns403()
+    {
+        using var client = _factory.CreateClient();
+        var fixture = await SeedAsync(client, "close-accountant");
+
+        var accountantEmail = "period-close-accountant-member@acme.test";
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var member = await scope.ServiceProvider.GetRequiredService<RegisterUserService>()
+                .RegisterAsync(new RegisterUserRequest(accountantEmail, "s3cret-password"), CancellationToken.None);
+            await scope.ServiceProvider.GetRequiredService<AddMembershipService>().AddAsync(
+                new AddMembershipRequest(fixture.CreatorUserId, member.Id, fixture.CompanyId, Companies.Domain.Enums.CompanyMembershipRole.Accountant),
+                CancellationToken.None);
+        }
+
+        var login = await client.PostAsJsonAsync("/api/auth/login", new AuthController.LoginBody(accountantEmail, "s3cret-password"));
+        login.EnsureSuccessStatusCode();
+        var accountantJwt = (await login.Content.ReadFromJsonAsync<AuthController.LoginResponse>())!.AccessToken;
+
+        var response = await client.SendAsync(Authorized(
+            new HttpRequestMessage(HttpMethod.Post, $"/api/companies/{fixture.CompanyPublicId}/accounting-periods/{fixture.PeriodPublicId}/closure"),
+            accountantJwt));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]

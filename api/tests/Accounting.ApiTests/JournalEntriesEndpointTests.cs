@@ -93,6 +93,7 @@ public sealed class JournalEntriesEndpointTests : IClassFixture<AccountingApiFac
     private sealed class FixedCompanyContext(long companyId) : Shared.ICurrentCompanyContext
     {
         public long CompanyId => companyId;
+        public string Role => "Admin";
     }
 
     private AppDbContext NewContext(long companyId)

@@ -75,6 +75,7 @@ public sealed class AccountingApiTestEnvironment : IAsyncLifetime
     private sealed class MigrationOnlyCompanyContext : Shared.ICurrentCompanyContext
     {
         public long CompanyId => throw new InvalidOperationException("Not resolved; migration-only context.");
+        public string Role => throw new InvalidOperationException("Not resolved; migration-only context.");
     }
 
     public async Task DisposeAsync() =>

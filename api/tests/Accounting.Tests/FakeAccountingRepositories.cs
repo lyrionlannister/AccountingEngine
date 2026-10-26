@@ -1,8 +1,15 @@
 using Accounting.Domain;
 using Accounting.Domain.Enums;
 using Accounting.Services;
+using Shared;
 
 namespace Accounting.Tests;
+
+internal sealed class FakeCurrentCompanyContext(long companyId = 1, string role = "Admin") : ICurrentCompanyContext
+{
+    public long CompanyId => companyId;
+    public string Role => role;
+}
 
 internal sealed class FakeJournalEntryRepository : IJournalEntryRepository
 {

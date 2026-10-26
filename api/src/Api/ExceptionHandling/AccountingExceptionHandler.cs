@@ -48,6 +48,14 @@ public sealed class AccountingExceptionHandler(ILogger<AccountingExceptionHandle
                 StatusCodes.Status409Conflict,
                 "El asiento ya fue revertido",
                 "Este asiento contable ya tiene una reversión registrada; no se puede revertir dos veces."),
+            InsufficientRoleException => (
+                StatusCodes.Status403Forbidden,
+                "Rol insuficiente",
+                "Tu rol en esta empresa no tiene permiso para realizar esta operación."),
+            SelfApprovalNotAllowedException => (
+                StatusCodes.Status403Forbidden,
+                "No puedes resolver tu propia solicitud",
+                "Un usuario no puede aprobar ni rechazar una solicitud de reapertura que él mismo creó."),
             _ => ((int?)null, (string?)null, (string?)null)
         };
 

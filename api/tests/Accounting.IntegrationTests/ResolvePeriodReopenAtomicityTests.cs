@@ -43,7 +43,8 @@ public sealed class ResolvePeriodReopenAtomicityTests : IAsyncLifetime
 
         await using var context = database.NewContext();
         var service = new ResolvePeriodReopenService(
-            new PeriodReopenRequestRepository(context), new AccountingPeriodRepository(context), new AuditTrailWriter(context));
+            new PeriodReopenRequestRepository(context), new AccountingPeriodRepository(context), new AuditTrailWriter(context),
+            new FixedCurrentCompanyContext(companyId));
 
         using var alreadyCancelled = new CancellationTokenSource();
         alreadyCancelled.Cancel();

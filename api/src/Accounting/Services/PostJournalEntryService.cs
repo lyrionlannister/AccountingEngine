@@ -1,6 +1,7 @@
 using Accounting.Domain;
 using Accounting.Domain.Enums;
 using Accounting.DTOs;
+using Shared;
 
 namespace Accounting.Services;
 
@@ -13,6 +14,7 @@ public sealed class PostJournalEntryService
     private readonly ICostCenterRepository _costCenters;
     private readonly IPartyRepository _parties;
     private readonly IAuditTrailWriter _auditTrail;
+    private readonly ICurrentCompanyContext _currentCompany;
 
     public PostJournalEntryService(
         IJournalEntryRepository journalEntries,
@@ -21,7 +23,8 @@ public sealed class PostJournalEntryService
         IAccountRepository accounts,
         ICostCenterRepository costCenters,
         IPartyRepository parties,
-        IAuditTrailWriter auditTrail)
+        IAuditTrailWriter auditTrail,
+        ICurrentCompanyContext currentCompany)
     {
         _journalEntries = journalEntries;
         _periods = periods;
@@ -30,10 +33,13 @@ public sealed class PostJournalEntryService
         _costCenters = costCenters;
         _parties = parties;
         _auditTrail = auditTrail;
+        _currentCompany = currentCompany;
     }
 
     public async Task<JournalEntryResult> PostAsync(PostJournalEntryRequest request, CancellationToken cancellationToken)
     {
+        RoleGuard.Require(_currentCompany.Role, "Admin", "Accountant");
+
         if (!string.IsNullOrWhiteSpace(request.SourceReference))
         {
             var existing = await _journalEntries.FindBySourceAsync(

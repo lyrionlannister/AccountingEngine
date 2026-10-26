@@ -70,7 +70,7 @@ public sealed class JournalEntryConcurrencyTests : IAsyncLifetime
             new VoucherTypeRepository(context),
             new AccountRepository(context),
             new CostCenterRepository(context),
-            new PartyRepository(context), new AuditTrailWriter(context));
+            new PartyRepository(context), new AuditTrailWriter(context), new FixedCurrentCompanyContext(CompanyId));
 
         try
         {
@@ -123,7 +123,8 @@ public sealed class JournalEntryConcurrencyTests : IAsyncLifetime
         var closeTask = Task.Run(async () =>
         {
             using var context = db.NewContext();
-            var service = new CloseAccountingPeriodService(new AccountingPeriodRepository(context), new JournalEntryRepository(context), new AuditTrailWriter(context));
+            var service = new CloseAccountingPeriodService(
+                new AccountingPeriodRepository(context), new JournalEntryRepository(context), new AuditTrailWriter(context), new FixedCurrentCompanyContext(CompanyId));
             await service.CloseAsync(new CloseAccountingPeriodRequest(CompanyId, fixture.PeriodId, "closer"), CancellationToken.None);
         });
 
@@ -162,7 +163,7 @@ public sealed class JournalEntryConcurrencyTests : IAsyncLifetime
 
         using var context = db.NewContext();
         var service = new CloseAccountingPeriodService(
-            new AccountingPeriodRepository(context), new JournalEntryRepository(context), new AuditTrailWriter(context));
+            new AccountingPeriodRepository(context), new JournalEntryRepository(context), new AuditTrailWriter(context), new FixedCurrentCompanyContext(CompanyId));
         var closeTask = service.CloseAsync(new CloseAccountingPeriodRequest(CompanyId, fixture.PeriodId, "closer"), CancellationToken.None);
 
         var finishedBeforeLockReleased = await Task.WhenAny(closeTask, Task.Delay(500)) == closeTask;

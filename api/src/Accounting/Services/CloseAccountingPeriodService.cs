@@ -1,6 +1,7 @@
 using Accounting.Domain;
 using Accounting.Domain.Enums;
 using Accounting.DTOs;
+using Shared;
 
 namespace Accounting.Services;
 
@@ -9,16 +10,23 @@ public sealed class CloseAccountingPeriodService
     private readonly IAccountingPeriodRepository _periods;
     private readonly IJournalEntryRepository _journalEntries;
     private readonly IAuditTrailWriter _auditTrail;
+    private readonly ICurrentCompanyContext _currentCompany;
 
-    public CloseAccountingPeriodService(IAccountingPeriodRepository periods, IJournalEntryRepository journalEntries, IAuditTrailWriter auditTrail)
+    public CloseAccountingPeriodService(
+        IAccountingPeriodRepository periods, IJournalEntryRepository journalEntries, IAuditTrailWriter auditTrail, ICurrentCompanyContext currentCompany)
     {
         _periods = periods;
         _journalEntries = journalEntries;
         _auditTrail = auditTrail;
+        _currentCompany = currentCompany;
     }
 
     public async Task<AccountingPeriodResult> CloseAsync(CloseAccountingPeriodRequest request, CancellationToken cancellationToken)
     {
+        // Cerrar un periodo es una operacion de mayor impacto que contabilizar/revertir --
+        // reservada a Admin (hallazgo de auditoria: ningun rol se validaba antes de esto).
+        RoleGuard.Require(_currentCompany.Role, "Admin");
+
         // El chequeo de borradores y el cierre corren DENTRO del lock de fila que CloseAsync
         // toma sobre el periodo (FOR UPDATE) — sin esto, un Post concurrente podia colarse
         // durante la ventana completa de esta decision, no solo durante el UPDATE final

@@ -17,7 +17,7 @@ public class CloseAccountingPeriodServiceTests
         period.Close("first-closer", DateTimeOffset.UtcNow);
         periods.Periods.Add(period);
 
-        var service = new CloseAccountingPeriodService(periods, new FakeJournalEntryRepository(), new FakeAuditTrailWriter());
+        var service = new CloseAccountingPeriodService(periods, new FakeJournalEntryRepository(), new FakeAuditTrailWriter(), new FakeCurrentCompanyContext());
         var request = new CloseAccountingPeriodRequest(CompanyId, AccountingPeriodId: 0, ClosedBy: "second-closer");
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.CloseAsync(request, CancellationToken.None));
@@ -30,7 +30,7 @@ public class CloseAccountingPeriodServiceTests
         var period = AccountingPeriod.Create(CompanyId, "2026-01", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31));
         periods.Periods.Add(period);
 
-        var service = new CloseAccountingPeriodService(periods, new FakeJournalEntryRepository(), new FakeAuditTrailWriter());
+        var service = new CloseAccountingPeriodService(periods, new FakeJournalEntryRepository(), new FakeAuditTrailWriter(), new FakeCurrentCompanyContext());
         var request = new CloseAccountingPeriodRequest(CompanyId, AccountingPeriodId: 0, ClosedBy: "closer");
 
         var result = await service.CloseAsync(request, CancellationToken.None);
@@ -50,7 +50,7 @@ public class CloseAccountingPeriodServiceTests
         journalEntries.Entries.Add(JournalEntry.Create(
             CompanyId, voucherTypeId: 1, accountingPeriodId: 0, new DateOnly(2026, 1, 15), "draft entry"));
 
-        var service = new CloseAccountingPeriodService(periods, journalEntries, new FakeAuditTrailWriter());
+        var service = new CloseAccountingPeriodService(periods, journalEntries, new FakeAuditTrailWriter(), new FakeCurrentCompanyContext());
         var request = new CloseAccountingPeriodRequest(CompanyId, AccountingPeriodId: 0, ClosedBy: "closer");
 
         await Assert.ThrowsAsync<AccountingPeriodHasDraftEntriesException>(() => service.CloseAsync(request, CancellationToken.None));
@@ -65,7 +65,7 @@ public class CloseAccountingPeriodServiceTests
         periods.Periods.Add(period);
         var auditTrail = new FakeAuditTrailWriter();
 
-        var service = new CloseAccountingPeriodService(periods, new FakeJournalEntryRepository(), auditTrail);
+        var service = new CloseAccountingPeriodService(periods, new FakeJournalEntryRepository(), auditTrail, new FakeCurrentCompanyContext());
         var request = new CloseAccountingPeriodRequest(CompanyId, AccountingPeriodId: 0, ClosedBy: "closer");
 
         await service.CloseAsync(request, CancellationToken.None);

@@ -61,7 +61,7 @@ public sealed class AccountBalanceSnapshotReconciliationTests : IAsyncLifetime
                 new VoucherTypeRepository(context),
                 new AccountRepository(context),
                 new CostCenterRepository(context),
-                new PartyRepository(context), new AuditTrailWriter(context));
+                new PartyRepository(context), new AuditTrailWriter(context), new FixedCurrentCompanyContext(CompanyId));
 
             var request = new PostJournalEntryRequest(
                 CompanyId, voucherTypeId, periodId, new DateOnly(2026, 1, 15), "Recon test", "tester",
@@ -92,7 +92,7 @@ public sealed class AccountBalanceSnapshotReconciliationTests : IAsyncLifetime
         using var recalcContext = db.NewContext();
         var snapshots = new AccountBalanceSnapshotRepository(recalcContext);
         var periods = new AccountingPeriodRepository(recalcContext);
-        var recalcService = new RecalculateAccountBalanceSnapshotService(periods, snapshots, new AuditTrailWriter(recalcContext));
+        var recalcService = new RecalculateAccountBalanceSnapshotService(periods, snapshots, new AuditTrailWriter(recalcContext), new FixedCurrentCompanyContext(CompanyId));
 
         var result = await recalcService.RecalculateAsync(
             new RecalculateAccountBalanceSnapshotRequest(CompanyId, periodId, cashAccountId, "tester"),

@@ -4,10 +4,20 @@ Motor contable multiempresa (partida doble) en C#/.NET, pensado como núcleo de 
 
 ## Stack
 
+**API** (`api/`)
 - .NET 10 (ASP.NET Core Web API)
 - PostgreSQL 18 vía EF Core / Npgsql
-- Redis (sesiones y caché, módulo `Auth`)
+- Redis (sesiones, módulo `Auth`)
 - xUnit + Testcontainers para pruebas de integración
+
+**Web** (`web/`)
+- React 19 + TypeScript + Vite
+- Tailwind CSS v4, react-router, ApexCharts
+- Vitest + Testing Library, oxlint
+
+**Desktop** (`desktop/`)
+- Avalonia UI 12 (.NET 10) + CommunityToolkit.Mvvm
+- xUnit para pruebas
 
 ## Arquitectura
 
@@ -22,9 +32,11 @@ Módulos actuales:
 | `Auth` | Login, sesiones (JWT + Redis con failover a Postgres) |
 | `Accounting` | Núcleo contable: catálogo de cuentas, asientos, períodos, saldos, auditoría |
 
-El detalle completo de arquitectura, convenciones de dominio y prioridades del proyecto está en [CLAUDE.md](CLAUDE.md) (proceso de desarrollo) y [api/CLAUDE.md](api/CLAUDE.md) (producto, dominio contable, convenciones de código).
+Dos clientes consumen la API: `web/` (navegador) y `desktop/` (aplicación de escritorio). Ambos exponen el mismo dominio (panel financiero, pólizas) con su propio stack de UI, organizados por módulo en carpetas planas por tipo (`components/`, `props`/ViewModels, `pages`/Views, etc.).
 
 ## Cómo levantar el proyecto
+
+### API + infraestructura
 
 ```bash
 cp .env.example .env   # completar POSTGRES_PASSWORD, JWT_SIGNING_KEY, REDIS_PASSWORD
@@ -33,7 +45,24 @@ docker compose up --build
 
 Esto levanta `postgres`, `redis`, `api` y `nginx` (expuesto en `HTTP_PORT`, por defecto 8080). Las migraciones de EF Core no se aplican automáticamente al arrancar la app — se corren aparte con `dotnet ef database update` por módulo.
 
+### Cliente web
+
+```bash
+cd web
+pnpm install
+pnpm dev
+```
+
+### Cliente desktop
+
+```bash
+cd desktop/AccountingEngine.Desktop
+dotnet run
+```
+
 ## Pruebas
+
+### API
 
 ```bash
 cd api
@@ -42,6 +71,22 @@ dotnet test AccountingEngine.slnx
 ```
 
 Las pruebas de integración (`*.IntegrationTests`, `Accounting.ApiTests`) levantan PostgreSQL/Redis reales vía Testcontainers — requieren Docker o Podman corriendo.
+
+### Web
+
+```bash
+cd web
+pnpm lint
+pnpm test
+pnpm build
+```
+
+### Desktop
+
+```bash
+cd desktop
+dotnet test AccountingEngine.Desktop.Tests
+```
 
 ## Licencia
 

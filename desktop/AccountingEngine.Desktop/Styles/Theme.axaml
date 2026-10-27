@@ -1,0 +1,88 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- Fuentes embebidas como recurso (avares://), no dependen de que el SO las tenga instaladas. Archivos en Assets/Fonts, licencia OFL incluida ahí. -->
+  <FontFamily x:Key="FontHead">avares://AccountingEngine.Desktop/Assets/Fonts#Schibsted Grotesk</FontFamily>
+  <FontFamily x:Key="FontBody">avares://AccountingEngine.Desktop/Assets/Fonts#IBM Plex Sans</FontFamily>
+  <FontFamily x:Key="FontMono">avares://AccountingEngine.Desktop/Assets/Fonts#IBM Plex Mono</FontFamily>
+
+  <ResourceDictionary.ThemeDictionaries>
+
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="PrimaryBrush" Color="#1F4E8C" />
+      <SolidColorBrush x:Key="OnPrimaryBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="SecondaryBrush" Color="#2F8F9D" />
+      <SolidColorBrush x:Key="BgBrush" Color="#F3F5F8" />
+      <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="RaisedBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="LineBrush" Color="#DCE2EA" />
+      <SolidColorBrush x:Key="TextBrush" Color="#14213A" />
+      <SolidColorBrush x:Key="MutedBrush" Color="#5B6B82" />
+      <SolidColorBrush x:Key="FaintBrush" Color="#8C99AD" />
+
+      <SolidColorBrush x:Key="SuccessBrush" Color="#1A7F4B" />
+      <SolidColorBrush x:Key="WarningBrush" Color="#B26B00" />
+      <SolidColorBrush x:Key="ErrorBrush" Color="#C0362C" />
+      <SolidColorBrush x:Key="SuccessTextBrush" Color="#14663C" />
+      <SolidColorBrush x:Key="WarningTextBrush" Color="#8A5300" />
+      <SolidColorBrush x:Key="ErrorTextBrush" Color="#A02A21" />
+
+      <SolidColorBrush x:Key="SideBrush" Color="#10233F" />
+      <SolidColorBrush x:Key="SideTextBrush" Color="#DCE5F2" />
+      <SolidColorBrush x:Key="SideMutedBrush" Color="#8095B3" />
+      <SolidColorBrush x:Key="SideLineBrush" Color="#1E3556" />
+      <SolidColorBrush x:Key="SideHoverBrush" Color="#1A3254" />
+      <SolidColorBrush x:Key="SideActiveBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="SideActiveTextBrush" Color="#10233F" />
+      <SolidColorBrush x:Key="SideMarkBrush" Color="#7FB0F2" />
+
+      <SolidColorBrush x:Key="LinkBrush" Color="#1F4E8C" />
+      <SolidColorBrush x:Key="RowHoverBrush" Color="#F6F8FB" />
+      <SolidColorBrush x:Key="Chart1Brush" Color="#2E64B5" />
+      <SolidColorBrush x:Key="Chart2Brush" Color="#12A0B0" />
+
+      <!-- Acento exclusivo de la zona de libros contables (pólizas, catálogo, balanza, estados). Nunca como color de marca general. -->
+      <SolidColorBrush x:Key="ZoneBrush" Color="#0E6B53" />
+      <SolidColorBrush x:Key="ZoneTextBrush" Color="#0B5C47" />
+    </ResourceDictionary>
+
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="PrimaryBrush" Color="#6EA4F0" />
+      <SolidColorBrush x:Key="OnPrimaryBrush" Color="#0B1424" />
+      <SolidColorBrush x:Key="SecondaryBrush" Color="#4FC1CC" />
+      <SolidColorBrush x:Key="BgBrush" Color="#0B1220" />
+      <SolidColorBrush x:Key="SurfaceBrush" Color="#111A2B" />
+      <SolidColorBrush x:Key="RaisedBrush" Color="#18233A" />
+      <SolidColorBrush x:Key="LineBrush" Color="#24314A" />
+      <SolidColorBrush x:Key="TextBrush" Color="#E6ECF5" />
+      <SolidColorBrush x:Key="MutedBrush" Color="#8D9BB3" />
+      <SolidColorBrush x:Key="FaintBrush" Color="#5F6E88" />
+
+      <SolidColorBrush x:Key="SuccessBrush" Color="#3FBF7F" />
+      <SolidColorBrush x:Key="WarningBrush" Color="#E0A030" />
+      <SolidColorBrush x:Key="ErrorBrush" Color="#F07167" />
+      <SolidColorBrush x:Key="SuccessTextBrush" Color="#5FD196" />
+      <SolidColorBrush x:Key="WarningTextBrush" Color="#EDB656" />
+      <SolidColorBrush x:Key="ErrorTextBrush" Color="#F68A82" />
+
+      <SolidColorBrush x:Key="SideBrush" Color="#080E1A" />
+      <SolidColorBrush x:Key="SideTextBrush" Color="#C9D4E5" />
+      <SolidColorBrush x:Key="SideMutedBrush" Color="#6E7F9B" />
+      <SolidColorBrush x:Key="SideLineBrush" Color="#18233A" />
+      <SolidColorBrush x:Key="SideHoverBrush" Color="#141F33" />
+      <SolidColorBrush x:Key="SideActiveBrush" Color="#1C2B47" />
+      <SolidColorBrush x:Key="SideActiveTextBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="SideMarkBrush" Color="#6EA4F0" />
+
+      <SolidColorBrush x:Key="LinkBrush" Color="#8DB8F5" />
+      <SolidColorBrush x:Key="RowHoverBrush" Color="#152038" />
+      <SolidColorBrush x:Key="Chart1Brush" Color="#4A86E0" />
+      <SolidColorBrush x:Key="Chart2Brush" Color="#16A093" />
+
+      <SolidColorBrush x:Key="ZoneBrush" Color="#3CC29A" />
+      <SolidColorBrush x:Key="ZoneTextBrush" Color="#5FD3AE" />
+    </ResourceDictionary>
+
+  </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>

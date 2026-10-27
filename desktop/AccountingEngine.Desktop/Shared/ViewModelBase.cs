@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace AccountingEngine.Desktop.ViewModels;
+namespace AccountingEngine.Desktop.Shared;
 
 public abstract class ViewModelBase : ObservableObject
 {

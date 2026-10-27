@@ -1,3 +1,4 @@
+using AccountingEngine.Desktop.Shared;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AccountingEngine.Desktop.ViewModels;

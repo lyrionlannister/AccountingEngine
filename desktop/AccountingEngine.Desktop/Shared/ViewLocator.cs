@@ -2,9 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using AccountingEngine.Desktop.ViewModels;
-
-namespace AccountingEngine.Desktop;
+namespace AccountingEngine.Desktop.Shared;
 
 /// <summary>
 /// Given a view model, returns the corresponding view if possible.

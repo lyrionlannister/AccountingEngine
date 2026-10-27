@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AccountingEngine.Desktop.Shell.ViewModels"
+             xmlns:views="using:AccountingEngine.Desktop.Shell.Views"
+             x:Class="AccountingEngine.Desktop.Shell.Views.ShellView"
+             x:DataType="vm:ShellViewModel">
+
+    <Grid ColumnDefinitions="Auto,*">
+        <views:SidebarView Grid.Column="0" />
+
+        <Grid Grid.Column="1" RowDefinitions="Auto,*">
+            <views:TopBarView Grid.Row="0" />
+            <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" />
+        </Grid>
+    </Grid>
+</UserControl>

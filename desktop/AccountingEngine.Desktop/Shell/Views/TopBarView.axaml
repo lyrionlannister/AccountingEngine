@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AccountingEngine.Desktop.Shell.ViewModels"
+             xmlns:controls="using:AccountingEngine.Desktop.Shared.Controls"
+             x:Class="AccountingEngine.Desktop.Shell.Views.TopBarView"
+             x:DataType="vm:ShellViewModel">
+
+    <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Background="{DynamicResource SurfaceBrush}" Padding="18,10">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+
+            <Button Grid.Column="0" Classes="ghost icon" Command="{Binding ToggleSidebarCommand}" ToolTip.Tip="Expandir/colapsar barra lateral">
+                <Viewbox Width="15" Height="15">
+                    <StackPanel Width="18" Height="18" VerticalAlignment="Center" Spacing="3">
+                        <Rectangle Height="2" Fill="{DynamicResource TextBrush}" />
+                        <Rectangle Height="2" Fill="{DynamicResource TextBrush}" />
+                        <Rectangle Height="2" Fill="{DynamicResource TextBrush}" />
+                    </StackPanel>
+                </Viewbox>
+            </Button>
+
+            <Border Grid.Column="1" Margin="12,0" MaxWidth="360" HorizontalAlignment="Left">
+                <TextBox PlaceholderText="Buscar póliza, cuenta o RFC" MinWidth="320" />
+            </Border>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                <controls:Badge Tone="success" Text="Periodo abierto" VerticalAlignment="Center" />
+                <Button Content="Octubre 2026" />
+                <Button Classes="primary" Content="+ Nueva póliza" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

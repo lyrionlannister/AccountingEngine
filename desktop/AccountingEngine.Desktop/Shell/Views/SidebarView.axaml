@@ -1,0 +1,103 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AccountingEngine.Desktop.Shell.ViewModels"
+             xmlns:conv="using:AccountingEngine.Desktop.Shared.Converters"
+             x:Class="AccountingEngine.Desktop.Shell.Views.SidebarView"
+             x:DataType="vm:ShellViewModel">
+
+    <UserControl.Resources>
+        <conv:EqualsConverter x:Key="Equals" />
+    </UserControl.Resources>
+
+    <Border Classes="sidebar" Classes.expanded="{Binding Sidebar.IsExpanded}"
+            Background="{DynamicResource SideBrush}"
+            BorderBrush="{DynamicResource SideLineBrush}"
+            BorderThickness="0,0,1,0">
+        <DockPanel Margin="10,14">
+
+            <!-- Marca: réplica de la cuenta T usada en el cliente web -->
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="4,0,0,18">
+                <Viewbox Width="20" Height="20">
+                    <Canvas Width="24" Height="24">
+                        <Rectangle Canvas.Left="2" Canvas.Top="4" Width="20" Height="2.6" Fill="{DynamicResource SideMarkBrush}" />
+                        <Rectangle Canvas.Left="10.7" Canvas.Top="4" Width="2.6" Height="16" Fill="{DynamicResource SideMarkBrush}" />
+                        <Rectangle Canvas.Left="3.5" Canvas.Top="10" Width="5.5" Height="1.6" Opacity="0.55" Fill="{DynamicResource SideMarkBrush}" />
+                        <Rectangle Canvas.Left="3.5" Canvas.Top="13.4" Width="4" Height="1.6" Opacity="0.55" Fill="{DynamicResource SideMarkBrush}" />
+                        <Rectangle Canvas.Left="15" Canvas.Top="10" Width="5.5" Height="1.6" Opacity="0.55" Fill="{DynamicResource SideMarkBrush}" />
+                    </Canvas>
+                </Viewbox>
+                <TextBlock Text="EsQuadra" FontFamily="{DynamicResource FontHead}" FontWeight="Bold" FontSize="15"
+                           Foreground="{DynamicResource SideTextBrush}" VerticalAlignment="Center"
+                           IsVisible="{Binding Sidebar.IsExpanded}" />
+            </StackPanel>
+
+            <!-- Usuario -->
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" Margin="4,10,0,0">
+                <Border Width="28" Height="28" CornerRadius="4" Background="{DynamicResource SideHoverBrush}">
+                    <TextBlock Text="MR" FontFamily="{DynamicResource FontHead}" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{DynamicResource SideTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel IsVisible="{Binding Sidebar.IsExpanded}">
+                    <TextBlock Text="Mariana Ríos" Foreground="{DynamicResource SideTextBrush}" FontSize="13" />
+                    <TextBlock Text="Contadora general" Foreground="{DynamicResource SideMutedBrush}" FontSize="11" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Navegación -->
+            <StackPanel Spacing="2">
+                <TextBlock Text="GENERAL" FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource SideMutedBrush}"
+                           Margin="10,10,0,2" IsVisible="{Binding Sidebar.IsExpanded}" />
+                <Button Classes="navitem" Command="{Binding NavigateCommand}" CommandParameter="panel"
+                        Classes.active="{Binding SelectedKey, Converter={StaticResource Equals}, ConverterParameter=panel}"
+                        ToolTip.Tip="Panel">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Viewbox Width="15" Height="15">
+                            <UniformGrid Columns="2" Rows="2" Width="20" Height="20">
+                                <Rectangle Width="8" Height="8" Fill="{Binding $parent[Button].Foreground}" RadiusX="1.5" RadiusY="1.5" Margin="1" />
+                                <Rectangle Width="8" Height="8" Fill="{Binding $parent[Button].Foreground}" RadiusX="1.5" RadiusY="1.5" Margin="1" />
+                                <Rectangle Width="8" Height="8" Fill="{Binding $parent[Button].Foreground}" RadiusX="1.5" RadiusY="1.5" Margin="1" />
+                                <Rectangle Width="8" Height="8" Fill="{Binding $parent[Button].Foreground}" RadiusX="1.5" RadiusY="1.5" Margin="1" />
+                            </UniformGrid>
+                        </Viewbox>
+                        <TextBlock Text="Panel" VerticalAlignment="Center" IsVisible="{Binding Sidebar.IsExpanded}" />
+                    </StackPanel>
+                </Button>
+
+                <TextBlock Text="CONTABILIDAD" FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource ZoneTextBrush}"
+                           Margin="10,12,0,2" IsVisible="{Binding Sidebar.IsExpanded}" />
+                <Button Classes="navitem" Command="{Binding NavigateCommand}" CommandParameter="polizas"
+                        Classes.active="{Binding SelectedKey, Converter={StaticResource Equals}, ConverterParameter=polizas}"
+                        ToolTip.Tip="Pólizas">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Viewbox Width="15" Height="15">
+                            <Canvas Width="20" Height="20">
+                                <Rectangle Canvas.Left="3" Canvas.Top="2" Width="14" Height="16" RadiusX="1.5" RadiusY="1.5"
+                                           Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.6" />
+                                <Rectangle Canvas.Left="6" Canvas.Top="7" Width="8" Height="1.4" Fill="{Binding $parent[Button].Foreground}" Opacity="0.7" />
+                                <Rectangle Canvas.Left="6" Canvas.Top="11" Width="8" Height="1.4" Fill="{Binding $parent[Button].Foreground}" Opacity="0.7" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="Pólizas" VerticalAlignment="Center" IsVisible="{Binding Sidebar.IsExpanded}" />
+                    </StackPanel>
+                </Button>
+
+                <TextBlock Text="SISTEMA" FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource SideMutedBrush}"
+                           Margin="10,12,0,2" IsVisible="{Binding Sidebar.IsExpanded}" />
+                <Button Classes="navitem" Command="{Binding NavigateCommand}" CommandParameter="componentes"
+                        Classes.active="{Binding SelectedKey, Converter={StaticResource Equals}, ConverterParameter=componentes}"
+                        ToolTip.Tip="Componentes">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Viewbox Width="15" Height="15">
+                            <StackPanel Width="20" Height="20" VerticalAlignment="Center" Spacing="2.5">
+                                <Rectangle Height="3" RadiusX="1" RadiusY="1" Fill="{Binding $parent[Button].Foreground}" />
+                                <Rectangle Height="3" RadiusX="1" RadiusY="1" Fill="{Binding $parent[Button].Foreground}" Opacity="0.75" Margin="2,0" />
+                                <Rectangle Height="3" RadiusX="1" RadiusY="1" Fill="{Binding $parent[Button].Foreground}" Opacity="0.5" Margin="4,0" />
+                            </StackPanel>
+                        </Viewbox>
+                        <TextBlock Text="Componentes" VerticalAlignment="Center" IsVisible="{Binding Sidebar.IsExpanded}" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+    </Border>
+</UserControl>

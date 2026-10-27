@@ -44,6 +44,16 @@
       <!-- Acento exclusivo de la zona de libros contables (pólizas, catálogo, balanza, estados). Nunca como color de marca general. -->
       <SolidColorBrush x:Key="ZoneBrush" Color="#0E6B53" />
       <SolidColorBrush x:Key="ZoneTextBrush" Color="#0B5C47" />
+
+      <SolidColorBrush x:Key="OnErrorBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="RingBrush" Color="#591F4E8C" />
+      <SolidColorBrush x:Key="ScrimBrush" Color="#8C14213A" />
+
+      <!-- Tintes derivados (alfa sobre success/warning/error/muted) para chips y alertas; no son roles de paleta nuevos. -->
+      <SolidColorBrush x:Key="SuccessSoftBrush" Color="#241A7F4B" />
+      <SolidColorBrush x:Key="WarningSoftBrush" Color="#29B26B00" />
+      <SolidColorBrush x:Key="ErrorSoftBrush" Color="#24C0362C" />
+      <SolidColorBrush x:Key="NeutralSoftBrush" Color="#1F5B6B82" />
     </ResourceDictionary>
 
     <ResourceDictionary x:Key="Dark">
@@ -81,6 +91,15 @@
 
       <SolidColorBrush x:Key="ZoneBrush" Color="#3CC29A" />
       <SolidColorBrush x:Key="ZoneTextBrush" Color="#5FD3AE" />
+
+      <SolidColorBrush x:Key="OnErrorBrush" Color="#2A0D0A" />
+      <SolidColorBrush x:Key="RingBrush" Color="#596EA4F0" />
+      <SolidColorBrush x:Key="ScrimBrush" Color="#CC0A0F18" />
+
+      <SolidColorBrush x:Key="SuccessSoftBrush" Color="#243FBF7F" />
+      <SolidColorBrush x:Key="WarningSoftBrush" Color="#29E0A030" />
+      <SolidColorBrush x:Key="ErrorSoftBrush" Color="#24F07167" />
+      <SolidColorBrush x:Key="NeutralSoftBrush" Color="#1F8D9BB3" />
     </ResourceDictionary>
 
   </ResourceDictionary.ThemeDictionaries>

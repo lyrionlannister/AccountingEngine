@@ -1,0 +1,228 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:AccountingEngine.Desktop.Shared.Controls">
+
+  <Styles.Resources>
+    <ControlTheme x:Key="{x:Type controls:Badge}" TargetType="controls:Badge">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border x:Name="PART_Border"
+                  CornerRadius="3"
+                  Padding="6,2"
+                  Background="{DynamicResource NeutralSoftBrush}"
+                  HorizontalAlignment="Left">
+            <TextBlock x:Name="PART_Text"
+                       Text="{TemplateBinding Text}"
+                       FontFamily="{DynamicResource FontBody}"
+                       FontSize="11.5"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource MutedBrush}" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </ControlTheme>
+  </Styles.Resources>
+
+  <!-- Badge: tono vía propiedad Tone -->
+  <Style Selector="controls|Badge[Tone=success] /template/ Border#PART_Border">
+    <Setter Property="Background" Value="{DynamicResource SuccessSoftBrush}" />
+  </Style>
+  <Style Selector="controls|Badge[Tone=success] /template/ TextBlock#PART_Text">
+    <Setter Property="Foreground" Value="{DynamicResource SuccessTextBrush}" />
+  </Style>
+  <Style Selector="controls|Badge[Tone=warning] /template/ Border#PART_Border">
+    <Setter Property="Background" Value="{DynamicResource WarningSoftBrush}" />
+  </Style>
+  <Style Selector="controls|Badge[Tone=warning] /template/ TextBlock#PART_Text">
+    <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}" />
+  </Style>
+  <Style Selector="controls|Badge[Tone=error] /template/ Border#PART_Border">
+    <Setter Property="Background" Value="{DynamicResource ErrorSoftBrush}" />
+  </Style>
+  <Style Selector="controls|Badge[Tone=error] /template/ TextBlock#PART_Text">
+    <Setter Property="Foreground" Value="{DynamicResource ErrorTextBrush}" />
+  </Style>
+
+  <!-- Botones: variantes -->
+  <Style Selector="Button">
+    <Setter Property="FontFamily" Value="{DynamicResource FontBody}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+  </Style>
+  <Style Selector="Button:pointerover">
+    <Setter Property="Background" Value="{DynamicResource BgBrush}" />
+  </Style>
+  <Style Selector="Button:disabled">
+    <Setter Property="Opacity" Value="0.45" />
+  </Style>
+
+  <Style Selector="Button.primary">
+    <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OnPrimaryBrush}" />
+  </Style>
+  <Style Selector="Button.primary:pointerover">
+    <Setter Property="Opacity" Value="0.9" />
+  </Style>
+
+  <Style Selector="Button.ghost">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.ghost:pointerover">
+    <Setter Property="Background" Value="{DynamicResource NeutralSoftBrush}" />
+  </Style>
+
+  <Style Selector="Button.danger">
+    <Setter Property="Background" Value="{DynamicResource ErrorBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OnErrorBrush}" />
+  </Style>
+  <Style Selector="Button.danger:pointerover">
+    <Setter Property="Opacity" Value="0.9" />
+  </Style>
+
+  <Style Selector="Button.danger-secondary">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ErrorTextBrush}" />
+  </Style>
+
+  <Style Selector="Button.link">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource LinkBrush}" />
+    <Setter Property="Padding" Value="0" />
+  </Style>
+
+  <Style Selector="Button.small">
+    <Setter Property="Padding" Value="10,6" />
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+  <Style Selector="Button.large">
+    <Setter Property="Padding" Value="16,11" />
+    <Setter Property="FontSize" Value="14" />
+  </Style>
+  <Style Selector="Button.icon">
+    <Setter Property="Padding" Value="8" />
+    <Setter Property="Width" Value="34" />
+    <Setter Property="Height" Value="34" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+  </Style>
+
+  <!-- Riel de la barra lateral: ancho colapsado/expandido -->
+  <Style Selector="Border.sidebar">
+    <Setter Property="Width" Value="72" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Width" Duration="0:0:0.18" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Border.sidebar.expanded">
+    <Setter Property="Width" Value="236" />
+  </Style>
+
+  <!-- Nav item de la barra lateral -->
+  <Style Selector="Button.navitem">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Foreground" Value="{DynamicResource SideTextBrush}" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="Padding" Value="10,7" />
+    <Setter Property="CornerRadius" Value="4" />
+  </Style>
+  <Style Selector="Button.navitem:pointerover">
+    <Setter Property="Background" Value="{DynamicResource SideHoverBrush}" />
+  </Style>
+  <Style Selector="Button.navitem.active">
+    <Setter Property="Background" Value="{DynamicResource SideActiveBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SideActiveTextBrush}" />
+    <Setter Property="FontWeight" Value="Medium" />
+  </Style>
+
+  <!-- Tarjeta genérica -->
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Padding" Value="18" />
+  </Style>
+
+  <!-- Alert -->
+  <Style Selector="Border.alert">
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="12,10" />
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+  </Style>
+  <Style Selector="Border.alert.success">
+    <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SuccessSoftBrush}" />
+  </Style>
+  <Style Selector="Border.alert.warning">
+    <Setter Property="BorderBrush" Value="{DynamicResource WarningBrush}" />
+    <Setter Property="Background" Value="{DynamicResource WarningSoftBrush}" />
+  </Style>
+  <Style Selector="Border.alert.error">
+    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ErrorSoftBrush}" />
+  </Style>
+
+  <!-- Campos -->
+  <Style Selector="TextBox">
+    <Setter Property="FontFamily" Value="{DynamicResource FontBody}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Padding" Value="10,7" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+  </Style>
+  <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+  </Style>
+
+  <Style Selector="ComboBox">
+    <Setter Property="FontFamily" Value="{DynamicResource FontBody}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Padding" Value="10,7" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+  </Style>
+
+  <Style Selector="CheckBox, RadioButton, ToggleSwitch">
+    <Setter Property="FontFamily" Value="{DynamicResource FontBody}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+  </Style>
+
+  <Style Selector="TabItem">
+    <Setter Property="FontFamily" Value="{DynamicResource FontBody}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Foreground" Value="{DynamicResource MutedBrush}" />
+  </Style>
+  <Style Selector="TabItem:selected">
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+  </Style>
+
+  <!-- Fila de tabla casera (reemplaza DataGrid, deprecado en Avalonia) -->
+  <Style Selector="Border.row">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="Border.row:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
+  </Style>
+
+</Styles>

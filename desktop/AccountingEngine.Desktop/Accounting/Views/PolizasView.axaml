@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AccountingEngine.Desktop.Accounting.ViewModels"
+             x:Class="AccountingEngine.Desktop.Accounting.Views.PolizasView"
+             x:DataType="vm:PolizasViewModel">
+
+    <StackPanel Spacing="20" Margin="28">
+        <StackPanel Spacing="4">
+            <TextBlock Text="Contabilidad › Pólizas" FontFamily="{DynamicResource FontMono}" FontSize="11" Foreground="{DynamicResource ZoneTextBrush}" />
+            <TextBlock Text="Pólizas" FontFamily="{DynamicResource FontHead}" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Text="Libro diario: pólizas de ingreso, egreso y diario" FontSize="12.5" Foreground="{DynamicResource MutedBrush}" />
+        </StackPanel>
+
+        <Border Classes="card">
+            <StackPanel Spacing="12">
+                <TextBlock Text="Pantalla pendiente de diseño" FontFamily="{DynamicResource FontHead}" FontSize="16" FontWeight="SemiBold" />
+                <TextBlock Text="Contenido previsto para el módulo de pólizas:" Foreground="{DynamicResource MutedBrush}" FontSize="13" />
+                <ItemsControl ItemsSource="{Binding Plan}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <TextBlock Text="{Binding StringFormat='• {0}'}" FontSize="13" Margin="0,2" TextWrapping="Wrap" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

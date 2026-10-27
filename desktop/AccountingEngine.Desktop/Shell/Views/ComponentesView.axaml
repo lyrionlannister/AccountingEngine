@@ -1,0 +1,115 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AccountingEngine.Desktop.Shell.ViewModels"
+             xmlns:controls="using:AccountingEngine.Desktop.Shared.Controls"
+             x:Class="AccountingEngine.Desktop.Shell.Views.ComponentesView"
+             x:DataType="vm:ComponentesViewModel">
+
+    <ScrollViewer>
+        <StackPanel Spacing="20" Margin="28">
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Sistema › Componentes" FontFamily="{DynamicResource FontMono}" FontSize="11" Foreground="{DynamicResource FaintBrush}" />
+                <TextBlock Text="Biblioteca de componentes" FontFamily="{DynamicResource FontHead}" FontSize="22" FontWeight="SemiBold" />
+                <TextBlock Text="Botones, campos, navegación y retroalimentación con los tokens DIR-D" FontSize="12.5" Foreground="{DynamicResource MutedBrush}" />
+            </StackPanel>
+
+            <Border Classes="card">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="Botones" FontFamily="{DynamicResource FontHead}" FontSize="15" FontWeight="SemiBold" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Classes="primary" Content="Primario" />
+                        <Button Content="Secundario" />
+                        <Button Classes="ghost" Content="Terciario" />
+                        <Button Classes="danger" Content="Cancelar póliza" />
+                        <Button Classes="danger-secondary" Content="Peligro secundario" />
+                        <Button Classes="link" Content="Ver auxiliar" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Classes="primary small" Content="Pequeño" />
+                        <Button Classes="primary" Content="Mediano" />
+                        <Button Classes="primary large" Content="Grande" />
+                        <Button Classes="primary" Content="Deshabilitado" IsEnabled="False" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="Campos de entrada" FontFamily="{DynamicResource FontHead}" FontSize="15" FontWeight="SemiBold" />
+                    <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="20" RowSpacing="14">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Razón social" FontSize="12.5" FontWeight="Medium" />
+                            <TextBox Text="Grupo Altamira S.A. de C.V." />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Cuenta contable" FontSize="12.5" FontWeight="Medium" />
+                            <TextBox Text="1105-9" FontFamily="{DynamicResource FontMono}" BorderBrush="{DynamicResource ErrorBrush}" />
+                            <TextBlock Text="La cuenta 1105-9 no existe en el catálogo" FontSize="11.5" Foreground="{DynamicResource ErrorTextBrush}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="4">
+                            <TextBlock Text="Método de pago" FontSize="12.5" FontWeight="Medium" />
+                            <ComboBox SelectedIndex="1" HorizontalAlignment="Stretch">
+                                <ComboBoxItem>PUE · Pago en una sola exhibición</ComboBoxItem>
+                                <ComboBoxItem>PPD · Pago en parcialidades o diferido</ComboBoxItem>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Notas internas" FontSize="12.5" FontWeight="Medium" />
+                            <TextBox Text="" PlaceholderText="Visible solo para el despacho" AcceptsReturn="True" Height="64" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                <Border Classes="card" Grid.Column="0">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Selección" FontFamily="{DynamicResource FontHead}" FontSize="15" FontWeight="SemiBold" />
+                        <CheckBox Content="Incluir cuentas de orden" IsChecked="True" />
+                        <CheckBox Content="Mostrar cuentas con saldo cero" />
+                        <ToggleSwitch OnContent="Contabilizar al timbrar el CFDI" OffContent="Contabilizar al timbrar el CFDI" IsChecked="True" />
+                        <ToggleSwitch OnContent="Aviso de cierre por correo" OffContent="Aviso de cierre por correo" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Grid.Column="1">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Navegación" FontFamily="{DynamicResource FontHead}" FontSize="15" FontWeight="SemiBold" />
+                        <TabControl>
+                            <TabItem Header="Resumen" />
+                            <TabItem Header="Partidas (3)" IsSelected="True" />
+                            <TabItem Header="CFDI adjuntos (2)" />
+                            <TabItem Header="Historial" />
+                        </TabControl>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Border Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Retroalimentación" FontFamily="{DynamicResource FontHead}" FontSize="15" FontWeight="SemiBold" />
+                    <TextBlock Text="Siempre con icono y texto, nunca solo color" FontSize="12" Foreground="{DynamicResource MutedBrush}" />
+                    <Border Classes="alert">
+                        <TextBlock TextWrapping="Wrap"><Run Text="Septiembre está cerrado." FontWeight="SemiBold" /><Run Text=" Los ajustes requieren reabrir el periodo." /></TextBlock>
+                    </Border>
+                    <Border Classes="alert success">
+                        <TextBlock TextWrapping="Wrap"><Run Text="Balanza cuadrada." FontWeight="SemiBold" /><Run Text=" Cargos y abonos suman $48,912,330.50." /></TextBlock>
+                    </Border>
+                    <Border Classes="alert warning">
+                        <TextBlock TextWrapping="Wrap"><Run Text="14 movimientos sin conciliar" FontWeight="SemiBold" /><Run Text=" en BBVA ****4821." /></TextBlock>
+                    </Border>
+                    <Border Classes="alert error">
+                        <TextBlock TextWrapping="Wrap"><Run Text="El SAT rechazó la balanza XML." FontWeight="SemiBold" /><Run Text=" El código agrupador 105.01 no coincide con la naturaleza de la cuenta 1105-01." /></TextBlock>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <controls:Badge Tone="success" Text="Conciliado" />
+                        <controls:Badge Tone="warning" Text="Pendiente" />
+                        <controls:Badge Tone="error" Text="Vencido" />
+                        <controls:Badge Tone="neutral" Text="Borrador" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -2,8 +2,10 @@ using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using AccountingEngine.Desktop.ViewModels;
-using AccountingEngine.Desktop.Views;
+using AccountingEngine.Desktop.Accounting.ViewModels;
+using AccountingEngine.Desktop.Shell.Services;
+using AccountingEngine.Desktop.Shell.ViewModels;
+using AccountingEngine.Desktop.Shell.Views;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AccountingEngine.Desktop;
@@ -23,9 +25,10 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
+            var shell = Services.GetRequiredService<ShellViewModel>();
+            desktop.MainWindow = new Views.MainWindow
             {
-                DataContext = Services.GetRequiredService<MainViewModel>(),
+                Content = new ShellView { DataContext = shell },
             };
         }
 
@@ -37,7 +40,11 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
-        services.AddTransient<MainViewModel>();
+        services.AddSingleton<ISidebarState, SidebarState>();
+        services.AddSingleton<ShellViewModel>();
+        services.AddTransient<PanelViewModel>();
+        services.AddTransient<PolizasViewModel>();
+        services.AddTransient<ComponentesViewModel>();
 
         return services.BuildServiceProvider();
     }

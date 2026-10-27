@@ -1,0 +1,127 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AccountingEngine.Desktop.Accounting.ViewModels"
+             xmlns:controls="using:AccountingEngine.Desktop.Shared.Controls"
+             x:Class="AccountingEngine.Desktop.Accounting.Views.PanelView"
+             x:DataType="vm:PanelViewModel">
+
+    <ScrollViewer>
+        <StackPanel Spacing="20" Margin="28">
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="General › Panel" FontFamily="{DynamicResource FontMono}" FontSize="11" Foreground="{DynamicResource FaintBrush}" />
+                <TextBlock Text="Panel financiero" FontFamily="{DynamicResource FontHead}" FontSize="22" FontWeight="SemiBold" />
+                <TextBlock Text="Octubre 2026 · cifras en MXN" FontSize="12.5" Foreground="{DynamicResource MutedBrush}" />
+            </StackPanel>
+
+            <ItemsControl ItemsSource="{Binding Stats}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="3" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:StatCardItem">
+                        <Border Classes="card" Margin="0,0,12,0">
+                            <StackPanel Spacing="10">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="{Binding Label}" FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource MutedBrush}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Code}" FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource FaintBrush}" />
+                                </Grid>
+                                <TextBlock Text="{Binding Value}" FontFamily="{DynamicResource FontHead}" FontSize="24" FontWeight="SemiBold" />
+                                <controls:Badge Tone="success" Text="{Binding Trend}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Classes="card">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Ingresos vs. gastos" FontFamily="{DynamicResource FontHead}" FontSize="15" FontWeight="SemiBold" />
+                    <TextBlock Text="Mensual, miles de MXN" FontSize="12" Foreground="{DynamicResource MutedBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,6,0,0">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Rectangle Width="10" Height="10" Fill="#2E64B5" RadiusX="2" RadiusY="2" />
+                            <TextBlock Text="Ingresos" FontSize="12" Foreground="{DynamicResource MutedBrush}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Rectangle Width="10" Height="10" Fill="#12A0B0" RadiusX="2" RadiusY="2" />
+                            <TextBlock Text="Gastos" FontSize="12" Foreground="{DynamicResource MutedBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <Viewbox Height="210" Stretch="Fill" Margin="0,8,0,0" HorizontalAlignment="Stretch">
+                        <Canvas Width="560" Height="190">
+                            <Line StartPoint="46,0" EndPoint="556,0" Canvas.Top="{Binding GridLines[0].Y}"
+                                  Stroke="{DynamicResource LineBrush}" StrokeThickness="1" StrokeDashArray="2,4" />
+                            <TextBlock Text="{Binding GridLines[0].Label}" Canvas.Top="{Binding GridLines[0].Y}" Canvas.Left="0"
+                                       FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" />
+                            <Line StartPoint="46,0" EndPoint="556,0" Canvas.Top="{Binding GridLines[1].Y}"
+                                  Stroke="{DynamicResource LineBrush}" StrokeThickness="1" StrokeDashArray="2,4" />
+                            <TextBlock Text="{Binding GridLines[1].Label}" Canvas.Top="{Binding GridLines[1].Y}" Canvas.Left="0"
+                                       FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" />
+                            <Line StartPoint="46,0" EndPoint="556,0" Canvas.Top="{Binding GridLines[2].Y}"
+                                  Stroke="{DynamicResource LineBrush}" StrokeThickness="1" StrokeDashArray="2,4" />
+                            <TextBlock Text="{Binding GridLines[2].Label}" Canvas.Top="{Binding GridLines[2].Y}" Canvas.Left="0"
+                                       FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" />
+
+                            <Polygon Points="{Binding GastosArea}" Fill="#2012A0B0" />
+                            <Polygon Points="{Binding IngresosArea}" Fill="#282E64B5" />
+                            <Polyline Points="{Binding GastosLine}" Stroke="#12A0B0" StrokeThickness="2.5"
+                                      StrokeJoin="Round" StrokeLineCap="Round" />
+                            <Polyline Points="{Binding IngresosLine}" Stroke="#2E64B5" StrokeThickness="2.5"
+                                      StrokeJoin="Round" StrokeLineCap="Round" />
+                            <Ellipse Width="9" Height="9" Fill="#2E64B5" Stroke="{DynamicResource SurfaceBrush}" StrokeThickness="2"
+                                     Canvas.Left="{Binding IngresosEnd.X}" Canvas.Top="{Binding IngresosEnd.Y}" RenderTransform="translate(-4.5px,-4.5px)" />
+                            <Ellipse Width="9" Height="9" Fill="#12A0B0" Stroke="{DynamicResource SurfaceBrush}" StrokeThickness="2"
+                                     Canvas.Left="{Binding GastosEnd.X}" Canvas.Top="{Binding GastosEnd.Y}" RenderTransform="translate(-4.5px,-4.5px)" />
+
+                            <TextBlock Text="{Binding MonthLabels[0].Label}" Canvas.Left="{Binding MonthLabels[0].X}" Canvas.Top="162"
+                                       FontSize="11" Foreground="{DynamicResource MutedBrush}" RenderTransform="translate(-10px,0px)" />
+                            <TextBlock Text="{Binding MonthLabels[1].Label}" Canvas.Left="{Binding MonthLabels[1].X}" Canvas.Top="162"
+                                       FontSize="11" Foreground="{DynamicResource MutedBrush}" RenderTransform="translate(-10px,0px)" />
+                            <TextBlock Text="{Binding MonthLabels[2].Label}" Canvas.Left="{Binding MonthLabels[2].X}" Canvas.Top="162"
+                                       FontSize="11" Foreground="{DynamicResource MutedBrush}" RenderTransform="translate(-10px,0px)" />
+                            <TextBlock Text="{Binding MonthLabels[3].Label}" Canvas.Left="{Binding MonthLabels[3].X}" Canvas.Top="162"
+                                       FontSize="11" Foreground="{DynamicResource MutedBrush}" RenderTransform="translate(-10px,0px)" />
+                        </Canvas>
+                    </Viewbox>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card" Padding="0">
+                <StackPanel>
+                    <StackPanel Margin="18,16,18,10" Spacing="2">
+                        <TextBlock Text="Transacciones recientes" FontFamily="{DynamicResource FontHead}" FontSize="15" FontWeight="SemiBold" />
+                        <TextBlock Text="Pólizas de ingreso, egreso y diario · octubre 2026" FontSize="12" Foreground="{DynamicResource MutedBrush}" />
+                    </StackPanel>
+                    <Grid ColumnDefinitions="100,150,*,120,130" Margin="18,0,18,8">
+                        <TextBlock Grid.Column="0" Text="FECHA" FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" />
+                        <TextBlock Grid.Column="1" Text="PÓLIZA" FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" />
+                        <TextBlock Grid.Column="2" Text="CONCEPTO" FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" />
+                        <TextBlock Grid.Column="3" Text="ESTADO" FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" />
+                        <TextBlock Grid.Column="4" Text="IMPORTE MXN" FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" HorizontalAlignment="Right" />
+                    </Grid>
+                    <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+                        <ItemsControl ItemsSource="{Binding Movimientos}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:MovimientoRow">
+                                    <Border Classes="row" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1">
+                                        <Grid ColumnDefinitions="100,150,*,120,130" Margin="18,10">
+                                            <TextBlock Grid.Column="0" Text="{Binding Fecha}" FontFamily="{DynamicResource FontMono}" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Poliza}" FontFamily="{DynamicResource FontMono}" FontSize="12" Foreground="{DynamicResource LinkBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="2" Text="{Binding Concepto}" FontSize="12.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                            <controls:Badge Grid.Column="3" Tone="{Binding EstadoTone}" Text="{Binding EstadoLabel}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="4" Text="{Binding ImporteDisplay}" FontSize="12.5" FontWeight="Medium" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

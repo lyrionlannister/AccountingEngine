@@ -19,6 +19,7 @@
 
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://AccountingEngine.Desktop/Styles/Controls.axaml" />
         <Style Selector="Window">
             <Setter Property="Background" Value="{DynamicResource BgBrush}" />
             <Setter Property="FontFamily" Value="{DynamicResource FontBody}" />

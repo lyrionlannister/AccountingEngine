@@ -1,11 +1,18 @@
-function App() {
+import { Navigate, Route, Routes } from 'react-router'
+import { AppLayout } from './layout/components/AppLayout'
+import { PanelPage } from './accounting/pages/PanelPage'
+import { PolizasPage } from './accounting/pages/PolizasPage'
+import { ComponentesPage } from './layout/pages/ComponentesPage'
+
+export const App = () => {
   return (
-    <main className="grid min-h-screen place-items-center">
-      <h1 className="font-[var(--font-head)] text-2xl font-semibold">
-        AccountingEngine — web
-      </h1>
-    </main>
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route index element={<Navigate to="/panel" replace />} />
+        <Route path="/panel" element={<PanelPage />} />
+        <Route path="/polizas" element={<PolizasPage />} />
+        <Route path="/componentes" element={<ComponentesPage />} />
+      </Route>
+    </Routes>
   )
 }
-
-export default App

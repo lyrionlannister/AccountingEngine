@@ -1,5 +1,5 @@
 {
-  "direction": "DIR-D — Tinta + Mayor (recomendada)",
+  "direction": "EsQuadra",
   "typography": {
     "head": "Schibsted Grotesk",
     "body": "IBM Plex Sans",
@@ -35,7 +35,10 @@
     "chart1": "#2E64B5",
     "chart2": "#12A0B0",
     "zone": "#0E6B53",
-    "zoneText": "#0B5C47"
+    "zoneText": "#0B5C47",
+    "onError": "#FFFFFF",
+    "ring": "#1F4E8C59",
+    "scrim": "#14213A8C"
   },
   "dark": {
     "primary": "#6EA4F0",
@@ -67,6 +70,9 @@
     "chart1": "#4A86E0",
     "chart2": "#16A093",
     "zone": "#3CC29A",
-    "zoneText": "#5FD3AE"
+    "zoneText": "#5FD3AE",
+    "onError": "#2A0D0A",
+    "ring": "#6EA4F059",
+    "scrim": "#0A0F18CC"
   }
 }

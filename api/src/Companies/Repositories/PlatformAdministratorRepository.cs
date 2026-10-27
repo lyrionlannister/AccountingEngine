@@ -14,6 +14,9 @@ public sealed class PlatformAdministratorRepository : IPlatformAdministratorRepo
     public Task<bool> IsPlatformAdministratorAsync(long userId, CancellationToken cancellationToken) =>
         _context.PlatformAdministrators.AnyAsync(a => a.UserId == userId, cancellationToken);
 
+    public Task<bool> ExistsAnyAsync(CancellationToken cancellationToken) =>
+        _context.PlatformAdministrators.AnyAsync(cancellationToken);
+
     public async Task AddAsync(PlatformAdministrator administrator, CancellationToken cancellationToken)
     {
         _context.PlatformAdministrators.Add(administrator);

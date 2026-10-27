@@ -16,4 +16,7 @@ public sealed class CompanyRepository : ICompanyRepository
 
     public Task<Company?> FindByPublicIdAsync(Guid publicId, CancellationToken cancellationToken) =>
         _context.Companies.AsNoTracking().FirstOrDefaultAsync(c => c.PublicId == publicId, cancellationToken);
+
+    public async Task<IReadOnlyList<Company>> FindByIdsAsync(IReadOnlyCollection<long> ids, CancellationToken cancellationToken) =>
+        await _context.Companies.AsNoTracking().Where(c => ids.Contains(c.Id)).ToListAsync(cancellationToken);
 }

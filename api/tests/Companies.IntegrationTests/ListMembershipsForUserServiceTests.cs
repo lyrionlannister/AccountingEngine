@@ -40,14 +40,15 @@ public sealed class ListMembershipsForUserServiceTests : IAsyncLifetime
         revoked.Revoke();
         await memberships.AddAsync(revoked, CancellationToken.None);
 
-        var sut = new ListMembershipsForUserService(memberships);
+        var sut = new ListMembershipsForUserService(memberships, new CompanyRepository(context));
 
         var result = await sut.ListActiveAsync(userId: 1, CancellationToken.None);
 
         Assert.Single(result);
-        Assert.Equal(companyA.Id, result[0].CompanyId);
+        Assert.Equal(companyA.PublicId, result[0].CompanyPublicId);
+        Assert.Equal(companyA.Name, result[0].CompanyName);
         Assert.Equal(CompanyMembershipRole.Admin, result[0].Role);
-        Assert.Equal(membershipA.CompanyId, result[0].CompanyId);
+        Assert.Equal(membershipA.CompanyId, companyA.Id);
     }
 
     [Fact]
@@ -56,7 +57,7 @@ public sealed class ListMembershipsForUserServiceTests : IAsyncLifetime
         await using var database = await TestDatabase.CreateAsync(_postgres);
         await using var context = database.NewContext();
 
-        var sut = new ListMembershipsForUserService(new MembershipRepository(context));
+        var sut = new ListMembershipsForUserService(new MembershipRepository(context), new CompanyRepository(context));
 
         var result = await sut.ListActiveAsync(userId: 999, CancellationToken.None);
 

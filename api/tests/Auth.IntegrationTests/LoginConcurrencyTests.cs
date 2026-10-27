@@ -46,10 +46,11 @@ public sealed class LoginConcurrencyTests : IAsyncLifetime
             new PostgresSessionFallbackStore(database.NewAuthContext()),
             NullLogger<FailoverSessionStore>.Instance);
 
+        var companiesContext = database.NewCompaniesContext();
         return new LoginService(
             new FindUserCredentialsService(new UserRepository(database.NewUsersContext())),
             sessionStore,
-            new ListMembershipsForUserService(new MembershipRepository(database.NewCompaniesContext())));
+            new ListMembershipsForUserService(new MembershipRepository(companiesContext), new CompanyRepository(companiesContext)));
     }
 
     [Fact]

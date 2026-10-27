@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --line: #dde1e7;
+  --ink: #161b24;
+  --ink-2: #4e5868;
+  --ink-3: #7a8494;
+  --accent: #1f4e8c;
+
+  --font-head: 'Schibsted Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'IBM Plex Sans', 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0e1116;
+    --surface: #161a21;
+    --line: #2a303a;
+    --ink: #e7eaf0;
+    --ink-2: #a8b0bd;
+    --ink-3: #7d8696;
+    --accent: #6ea4f0;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0e1116;
+  --surface: #161a21;
+  --line: #2a303a;
+  --ink: #e7eaf0;
+  --ink-2: #a8b0bd;
+  --ink-3: #7d8696;
+  --accent: #6ea4f0;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+}

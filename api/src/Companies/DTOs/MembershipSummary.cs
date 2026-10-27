@@ -2,4 +2,4 @@ using Companies.Domain.Enums;
 
 namespace Companies.DTOs;
 
-public sealed record MembershipSummary(long CompanyId, CompanyMembershipRole Role);
+public sealed record MembershipSummary(Guid CompanyPublicId, string CompanyName, CompanyMembershipRole Role);

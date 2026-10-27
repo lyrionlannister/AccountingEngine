@@ -41,13 +41,14 @@ public sealed class FailoverTests : IAsyncLifetime
             AbortOnConnectFail = false
         });
 
+        var companiesContext = database.NewCompaniesContext();
         var sut = new LoginService(
             new FindUserCredentialsService(new UserRepository(database.NewUsersContext())),
             new FailoverSessionStore(
                 new RedisSessionStore(redis),
                 new PostgresSessionFallbackStore(database.NewAuthContext()),
                 NullLogger<FailoverSessionStore>.Instance),
-            new ListMembershipsForUserService(new MembershipRepository(database.NewCompaniesContext())));
+            new ListMembershipsForUserService(new MembershipRepository(companiesContext), new CompanyRepository(companiesContext)));
 
         var result = await sut.LoginAsync(
             new LoginRequest("failover@acme.test", "s3cret-password", "203.0.113.10"), CancellationToken.None);
@@ -83,10 +84,11 @@ public sealed class FailoverTests : IAsyncLifetime
             new PostgresSessionFallbackStore(database.NewAuthContext()),
             NullLogger<FailoverSessionStore>.Instance);
 
+        var companiesContext = database.NewCompaniesContext();
         var sut = new LoginService(
             new FindUserCredentialsService(new UserRepository(database.NewUsersContext())),
             storeDuringOutage,
-            new ListMembershipsForUserService(new MembershipRepository(database.NewCompaniesContext())));
+            new ListMembershipsForUserService(new MembershipRepository(companiesContext), new CompanyRepository(companiesContext)));
 
         var result = await sut.LoginAsync(
             new LoginRequest("failover-recovery@acme.test", "s3cret-password", "203.0.113.10"), CancellationToken.None);

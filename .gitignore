@@ -3,6 +3,8 @@ CLAUDE.md
 
 artifacts/
 *.user
+bin/
+obj/
 
 .vs/
 .idea/
@@ -16,3 +18,4 @@ docs/specs/
 tasks/
 
 graphify-out/
+.mcp.json

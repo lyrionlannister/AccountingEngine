@@ -1,13 +1,41 @@
 @import 'tailwindcss';
 
 :root {
-  --bg: #f4f5f7;
+  --primary: #1f4e8c;
+  --on-primary: #ffffff;
+  --secondary: #2f8f9d;
+  --bg: #f3f5f8;
   --surface: #ffffff;
-  --line: #dde1e7;
-  --ink: #161b24;
-  --ink-2: #4e5868;
-  --ink-3: #7a8494;
-  --accent: #1f4e8c;
+  --raised: #ffffff;
+  --line: #dce2ea;
+  --text: #14213a;
+  --muted: #5b6b82;
+  --faint: #8c99ad;
+
+  --success: #1a7f4b;
+  --warning: #b26b00;
+  --error: #c0362c;
+  --success-text: #14663c;
+  --warning-text: #8a5300;
+  --error-text: #a02a21;
+
+  --side: #10233f;
+  --side-text: #dce5f2;
+  --side-muted: #8095b3;
+  --side-line: #1e3556;
+  --side-hover: #1a3254;
+  --side-active: #ffffff;
+  --side-active-text: #10233f;
+  --side-mark: #7fb0f2;
+
+  --link: #1f4e8c;
+  --row-hover: #f6f8fb;
+  --chart-1: #2e64b5;
+  --chart-2: #12a0b0;
+
+  /* Acento exclusivo de la zona de libros contables (pólizas, catálogo, balanza, estados). Nunca como color de marca general. */
+  --zone: #0e6b53;
+  --zone-text: #0b5c47;
 
   --font-head: 'Schibsted Grotesk', 'Helvetica Neue', Arial, sans-serif;
   --font-body: 'IBM Plex Sans', 'Segoe UI', Roboto, Arial, sans-serif;
@@ -18,31 +46,87 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #0e1116;
-    --surface: #161a21;
-    --line: #2a303a;
-    --ink: #e7eaf0;
-    --ink-2: #a8b0bd;
-    --ink-3: #7d8696;
-    --accent: #6ea4f0;
+    --primary: #6ea4f0;
+    --on-primary: #0b1424;
+    --secondary: #4fc1cc;
+    --bg: #0b1220;
+    --surface: #111a2b;
+    --raised: #18233a;
+    --line: #24314a;
+    --text: #e6ecf5;
+    --muted: #8d9bb3;
+    --faint: #5f6e88;
+
+    --success: #3fbf7f;
+    --warning: #e0a030;
+    --error: #f07167;
+    --success-text: #5fd196;
+    --warning-text: #edb656;
+    --error-text: #f68a82;
+
+    --side: #080e1a;
+    --side-text: #c9d4e5;
+    --side-muted: #6e7f9b;
+    --side-line: #18233a;
+    --side-hover: #141f33;
+    --side-active: #1c2b47;
+    --side-active-text: #ffffff;
+    --side-mark: #6ea4f0;
+
+    --link: #8db8f5;
+    --row-hover: #152038;
+    --chart-1: #4a86e0;
+    --chart-2: #16a093;
+
+    --zone: #3cc29a;
+    --zone-text: #5fd3ae;
+
     color-scheme: dark;
   }
 }
 
 :root[data-theme='dark'] {
-  --bg: #0e1116;
-  --surface: #161a21;
-  --line: #2a303a;
-  --ink: #e7eaf0;
-  --ink-2: #a8b0bd;
-  --ink-3: #7d8696;
-  --accent: #6ea4f0;
+  --primary: #6ea4f0;
+  --on-primary: #0b1424;
+  --secondary: #4fc1cc;
+  --bg: #0b1220;
+  --surface: #111a2b;
+  --raised: #18233a;
+  --line: #24314a;
+  --text: #e6ecf5;
+  --muted: #8d9bb3;
+  --faint: #5f6e88;
+
+  --success: #3fbf7f;
+  --warning: #e0a030;
+  --error: #f07167;
+  --success-text: #5fd196;
+  --warning-text: #edb656;
+  --error-text: #f68a82;
+
+  --side: #080e1a;
+  --side-text: #c9d4e5;
+  --side-muted: #6e7f9b;
+  --side-line: #18233a;
+  --side-hover: #141f33;
+  --side-active: #1c2b47;
+  --side-active-text: #ffffff;
+  --side-mark: #6ea4f0;
+
+  --link: #8db8f5;
+  --row-hover: #152038;
+  --chart-1: #4a86e0;
+  --chart-2: #16a093;
+
+  --zone: #3cc29a;
+  --zone-text: #5fd3ae;
+
   color-scheme: dark;
 }
 
 body {
   margin: 0;
   background: var(--bg);
-  color: var(--ink);
+  color: var(--text);
   font-family: var(--font-body);
 }

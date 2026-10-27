@@ -16,6 +16,6 @@ appsettings.*.local.json
 
 docs/specs/
 tasks/
-
+web/node_modules/
 graphify-out/
 .mcp.json

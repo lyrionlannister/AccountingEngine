@@ -78,6 +78,20 @@ public sealed class PlatformAdministratorBootstrapServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task EnsureSeededAsync_NoExistingUserAndNoPassword_ThrowsInvalidOperationException()
+    {
+        await using var database = await TestDatabase.CreateAsync(_postgres);
+        await using var companiesContext = database.NewContext();
+        await using var usersContext = NewUsersContext();
+        var sut = CreateSut(out var admins, out var users, companiesContext, usersContext);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => sut.EnsureSeededAsync("admin@acme.test", null, CancellationToken.None));
+
+        Assert.Null(await users.FindByEmailAsync("admin@acme.test", CancellationToken.None));
+    }
+
+    [Fact]
     public async Task EnsureSeededAsync_AdminAlreadyExistsWithDifferentEmail_DoesNotPromoteNewEmail()
     {
         await using var database = await TestDatabase.CreateAsync(_postgres);

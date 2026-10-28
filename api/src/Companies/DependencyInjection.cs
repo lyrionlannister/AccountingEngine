@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<GrantPlatformAdministratorService>();
         services.AddScoped<ListMembershipsForUserService>();
         services.AddScoped<PlatformAdministratorBootstrapService>();
+        services.AddScoped<RegisterTenantWithOwnerService>();
 
         return services;
     }

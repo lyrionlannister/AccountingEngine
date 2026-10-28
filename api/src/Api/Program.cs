@@ -70,6 +70,7 @@ builder.Services.AddControllers(options => options.Filters.AddService<Api.Securi
 builder.Services.AddSignalR();
 
 builder.Services.AddExceptionHandler<AccountingExceptionHandler>();
+builder.Services.AddExceptionHandler<UsersExceptionHandler>();
 builder.Services.AddExceptionHandler<AuthExceptionHandler>();
 builder.Services.AddProblemDetails();
 
@@ -83,6 +84,15 @@ builder.Services.AddRateLimiter(options =>
         {
             Window = TimeSpan.FromMinutes(15),
             PermitLimit = 10,
+            QueueLimit = 0
+        }));
+
+    options.AddPolicy("register", httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            Window = TimeSpan.FromHours(1),
+            PermitLimit = 5,
             QueueLimit = 0
         }));
 });

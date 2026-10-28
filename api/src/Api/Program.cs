@@ -8,6 +8,7 @@ using Api.Security;
 using Auth;
 using Auth.Services;
 using Companies;
+using Companies.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
@@ -69,6 +70,7 @@ builder.Services.AddControllers(options => options.Filters.AddService<Api.Securi
 builder.Services.AddSignalR();
 
 builder.Services.AddExceptionHandler<AccountingExceptionHandler>();
+builder.Services.AddExceptionHandler<UsersExceptionHandler>();
 builder.Services.AddExceptionHandler<AuthExceptionHandler>();
 builder.Services.AddProblemDetails();
 
@@ -84,6 +86,15 @@ builder.Services.AddRateLimiter(options =>
             PermitLimit = 10,
             QueueLimit = 0
         }));
+
+    options.AddPolicy("register", httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            Window = TimeSpan.FromHours(1),
+            PermitLimit = 5,
+            QueueLimit = 0
+        }));
 });
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -93,6 +104,14 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 var app = builder.Build();
+
+var platformAdminEmail = app.Configuration["PlatformAdmin:Email"];
+if (!string.IsNullOrWhiteSpace(platformAdminEmail))
+{
+    using var platformAdminScope = app.Services.CreateScope();
+    await platformAdminScope.ServiceProvider.GetRequiredService<PlatformAdministratorBootstrapService>()
+        .EnsureSeededAsync(platformAdminEmail, app.Configuration["PlatformAdmin:Password"], CancellationToken.None);
+}
 
 app.UseExceptionHandler();
 app.UseForwardedHeaders();

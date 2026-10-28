@@ -8,6 +8,7 @@ using Api.Security;
 using Auth;
 using Auth.Services;
 using Companies;
+using Companies.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
@@ -93,6 +94,14 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 var app = builder.Build();
+
+var platformAdminEmail = app.Configuration["PlatformAdmin:Email"];
+if (!string.IsNullOrWhiteSpace(platformAdminEmail))
+{
+    using var platformAdminScope = app.Services.CreateScope();
+    await platformAdminScope.ServiceProvider.GetRequiredService<PlatformAdministratorBootstrapService>()
+        .EnsureSeededAsync(platformAdminEmail, app.Configuration["PlatformAdmin:Password"], CancellationToken.None);
+}
 
 app.UseExceptionHandler();
 app.UseForwardedHeaders();

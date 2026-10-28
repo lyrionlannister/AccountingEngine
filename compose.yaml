@@ -42,6 +42,8 @@ services:
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=motor_contable_app;Password=${ACCOUNTING_APP_DB_PASSWORD}
       ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD}
       Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      PlatformAdmin__Email: ${PLATFORM_ADMIN_EMAIL}
+      PlatformAdmin__Password: ${PLATFORM_ADMIN_PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,10 +1,20 @@
-import { CalendarDays, Menu, Plus, Search } from 'lucide-react'
+import { CalendarDays, LogOut, Menu, Plus, Search, UserRound } from 'lucide-react'
+import { useNavigate } from 'react-router'
 import { Button } from '../../ui/components/Button'
 import { Badge } from '../../ui/components/Badge'
+import { DropdownMenu } from '../../ui/components/DropdownMenu'
 import { useSidebar } from '../../ui/hooks/use-sidebar'
+import { useAuth } from '../../auth/hooks/use-auth'
 
 export const AppHeader = () => {
   const { toggleMobileSidebar } = useSidebar()
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+
+  const onLogout = async () => {
+    await logout()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <header className="flex items-center gap-3 border-b border-line bg-surface px-4.5 py-3 md:px-7">
@@ -37,6 +47,16 @@ export const AppHeader = () => {
             Nueva póliza
           </Button>
         </span>
+
+        <DropdownMenu
+          aria-label="Menú de usuario"
+          trigger={
+            <Button size="md" iconOnly variant="ghost" aria-label="Menú de usuario">
+              <UserRound className="size-4.5" aria-hidden />
+            </Button>
+          }
+          items={[{ label: 'Cerrar sesión', icon: <LogOut className="size-4" aria-hidden />, danger: true, onSelect: onLogout }]}
+        />
       </div>
     </header>
   )

@@ -5,6 +5,10 @@ import { defineConfig } from 'vitest/config'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    // apunta al nginx del compose (HTTP_PORT), no al contenedor api directo: api no publica puerto propio.
+    proxy: { '/api': 'http://localhost:8080' },
+  },
   test: {
     environment: 'jsdom',
     globals: true,

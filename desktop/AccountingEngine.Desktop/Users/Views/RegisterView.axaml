@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AccountingEngine.Desktop.Users.ViewModels"
+             xmlns:conv="using:Avalonia.Data.Converters"
+             x:Class="AccountingEngine.Desktop.Users.Views.RegisterView"
+             x:DataType="vm:RegisterViewModel">
+
+    <ScrollViewer Background="{DynamicResource BgBrush}">
+        <Border Classes="card" Width="380" Margin="0,40" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Spacing="14">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="AccountingEngine" FontFamily="{DynamicResource FontHead}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}" />
+                    <TextBlock Text="Crea tu cuenta" FontFamily="{DynamicResource FontHead}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" Margin="0,6,0,0" />
+                    <TextBlock Text="Registra tu empresa y empieza a usar AccountingEngine." FontSize="13" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <Border Classes="alert error" IsVisible="{Binding ErrorMessage, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource ErrorTextBrush}" FontSize="12.5" TextWrapping="Wrap" />
+                </Border>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Correo" FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource TextBrush}" />
+                    <TextBox Text="{Binding Email}" PlaceholderText="tu@empresa.com" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Contraseña" FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource TextBrush}" />
+                    <TextBox Text="{Binding Password}" PasswordChar="•" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Nombre del grupo empresarial" FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource TextBrush}" />
+                    <TextBox Text="{Binding TenantName}" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Nombre de la empresa" FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource TextBrush}" />
+                    <TextBox Text="{Binding CompanyName}" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="País" FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource TextBrush}" />
+                    <ComboBox SelectedItem="{Binding CountryCode}" HorizontalAlignment="Stretch">
+                        <x:String>MX</x:String>
+                        <x:String>CO</x:String>
+                    </ComboBox>
+                </StackPanel>
+
+                <Button Classes="primary" Content="Crear cuenta" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Command="{Binding RegisterCommand}" IsEnabled="{Binding !IsBusy}" />
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
+                    <TextBlock Text="¿Ya tienes cuenta?" FontSize="12.5" Foreground="{DynamicResource MutedBrush}" />
+                    <Button Classes="link" Content="Inicia sesión" Command="{Binding GoToLoginCommand}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</UserControl>

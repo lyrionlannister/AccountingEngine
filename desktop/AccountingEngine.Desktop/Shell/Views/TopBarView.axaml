@@ -26,6 +26,7 @@
                 <controls:Badge Tone="success" Text="Periodo abierto" VerticalAlignment="Center" />
                 <Button Content="Octubre 2026" />
                 <Button Classes="primary" Content="+ Nueva póliza" />
+                <Button Classes="ghost" Content="Cerrar sesión" Command="{Binding LogoutCommand}" />
             </StackPanel>
         </Grid>
     </Border>

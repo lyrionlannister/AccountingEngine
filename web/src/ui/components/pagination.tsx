@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from './Button'
+import { Button } from './button'
 import type { PaginationProps } from '../props/pagination-props'
 
 export const Pagination = ({ page, pageCount, totalLabel, onChange }: PaginationProps) => {

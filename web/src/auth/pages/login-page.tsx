@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
-import { Alert } from '../../ui/components/Alert'
-import { Button } from '../../ui/components/Button'
-import { Field } from '../../ui/components/Field'
-import { Input } from '../../ui/components/Input'
+import { Alert } from '../../ui/components/alert'
+import { Button } from '../../ui/components/button'
+import { Field } from '../../ui/components/field'
+import { Input } from '../../ui/components/input'
 import { ApiError } from '../../lib/http'
-import { AuthLayout } from '../components/AuthLayout'
+import { AuthLayout } from '../components/auth-layout'
 import { useAuth } from '../hooks/use-auth'
 
 export const LoginPage = () => {

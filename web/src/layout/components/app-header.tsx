@@ -1,8 +1,8 @@
 import { CalendarDays, LogOut, Menu, Plus, Search, UserRound } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import { Button } from '../../ui/components/Button'
-import { Badge } from '../../ui/components/Badge'
-import { DropdownMenu } from '../../ui/components/DropdownMenu'
+import { Button } from '../../ui/components/button'
+import { Badge } from '../../ui/components/badge'
+import { DropdownMenu } from '../../ui/components/dropdown-menu'
 import { useSidebar } from '../../ui/hooks/use-sidebar'
 import { useAuth } from '../../auth/hooks/use-auth'
 

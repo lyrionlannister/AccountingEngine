@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { AuthProvider } from '../src/auth/components/AuthProvider'
+import { AuthProvider } from '../src/auth/components/auth-provider'
 import { SESSION_STORAGE_KEY } from '../src/auth/constants/session-storage'
-import { App } from '../src/App'
+import { App } from '../src/app'
 
 describe('App', () => {
   beforeEach(() => {

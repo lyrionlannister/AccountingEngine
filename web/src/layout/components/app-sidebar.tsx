@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router'
 import { useSidebar } from '../../ui/hooks/use-sidebar'
-import { Logo } from '../../ui/components/Logo'
+import { Logo } from '../../ui/components/logo'
 import { NAV_GROUP_START_KEYS, NAV_ITEMS } from '../constants/nav-items'
 import { isNavPathActive } from '../utils/is-nav-path-active'
 import type { AppSidebarProps } from '../props/app-sidebar-props'

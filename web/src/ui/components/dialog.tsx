@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef } from 'react'
 import { X } from 'lucide-react'
-import { Button } from './Button'
+import { Button } from './button'
 import type { DialogProps } from '../props/dialog-props'
 
 export const Dialog = ({ open, onClose, title, description, children, footer }: DialogProps) => {

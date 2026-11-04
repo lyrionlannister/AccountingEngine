@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Logo } from '../../ui/components/Logo'
+import { Logo } from '../../ui/components/logo'
 
 export const AuthLayout = ({ title, description, children }: { title: string; description?: string; children: ReactNode }) => {
   return (

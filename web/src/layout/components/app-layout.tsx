@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
 import { Outlet } from 'react-router'
-import { SidebarProvider } from '../../ui/components/SidebarProvider'
+import { SidebarProvider } from '../../ui/components/sidebar-provider'
 import { useSidebar } from '../../ui/hooks/use-sidebar'
-import { AppHeader } from './AppHeader'
-import { AppSidebar } from './AppSidebar'
-import { MobileTabBar } from './MobileTabBar'
+import { AppHeader } from './app-header'
+import { AppSidebar } from './app-sidebar'
+import { MobileTabBar } from './mobile-tab-bar'
 
 const LayoutContent = () => {
   const { isMobileOpen, closeMobileSidebar } = useSidebar()

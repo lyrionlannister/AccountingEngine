@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { App } from '../../src/App'
-import { AuthProvider } from '../../src/auth/components/AuthProvider'
+import { App } from '../../src/app'
+import { AuthProvider } from '../../src/auth/components/auth-provider'
 
 const renderAtLogin = () =>
   render(

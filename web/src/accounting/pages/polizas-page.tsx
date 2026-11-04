@@ -1,8 +1,8 @@
 import { ArrowLeft, BookText } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import { Breadcrumb } from '../../ui/components/Breadcrumb'
-import { Button } from '../../ui/components/Button'
-import { EmptyState } from '../../ui/components/EmptyState'
+import { Breadcrumb } from '../../ui/components/breadcrumb'
+import { Button } from '../../ui/components/button'
+import { EmptyState } from '../../ui/components/empty-state'
 
 export const PolizasPage = () => {
   const navigate = useNavigate()

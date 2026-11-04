@@ -14,7 +14,6 @@ public class ShellViewModelTests
         services.AddSingleton<ISidebarState, SidebarState>();
         services.AddTransient<PanelViewModel>();
         services.AddTransient<PolizasViewModel>();
-        services.AddTransient<ComponentesViewModel>();
         var provider = services.BuildServiceProvider();
 
         return new ShellViewModel(

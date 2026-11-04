@@ -24,7 +24,6 @@ public class AppRootViewModelTests
         services.AddSingleton<ISidebarState, SidebarState>();
         services.AddTransient<PanelViewModel>();
         services.AddTransient<PolizasViewModel>();
-        services.AddTransient<ComponentesViewModel>();
         services.AddTransient<LoginViewModel>();
         services.AddTransient<RegisterViewModel>();
         services.AddSingleton<ShellViewModel>();

@@ -1,11 +1,10 @@
 import { Navigate, Route, Routes } from 'react-router'
-import { LoginPage } from './auth/pages/LoginPage'
-import { ProtectedRoute } from './auth/components/ProtectedRoute'
-import { AppLayout } from './layout/components/AppLayout'
-import { PanelPage } from './accounting/pages/PanelPage'
-import { PolizasPage } from './accounting/pages/PolizasPage'
-import { ComponentesPage } from './layout/pages/ComponentesPage'
-import { RegisterPage } from './users/pages/RegisterPage'
+import { LoginPage } from './auth/pages/login-page'
+import { ProtectedRoute } from './auth/components/protected-route'
+import { AppLayout } from './layout/components/app-layout'
+import { PanelPage } from './accounting/pages/panel-page'
+import { PolizasPage } from './accounting/pages/polizas-page'
+import { RegisterPage } from './users/pages/register-page'
 
 export const App = () => {
   return (
@@ -18,7 +17,6 @@ export const App = () => {
           <Route index element={<Navigate to="/panel" replace />} />
           <Route path="/panel" element={<PanelPage />} />
           <Route path="/polizas" element={<PolizasPage />} />
-          <Route path="/componentes" element={<ComponentesPage />} />
         </Route>
       </Route>
     </Routes>

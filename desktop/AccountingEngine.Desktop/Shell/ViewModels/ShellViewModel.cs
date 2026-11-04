@@ -52,7 +52,6 @@ public partial class ShellViewModel : ViewModelBase
         {
             "panel" => _services.GetRequiredService<PanelViewModel>(),
             "polizas" => _services.GetRequiredService<PolizasViewModel>(),
-            "componentes" => _services.GetRequiredService<ComponentesViewModel>(),
             _ => CurrentPage,
         };
     }

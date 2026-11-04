@@ -80,23 +80,6 @@
                         <TextBlock Text="Pólizas" VerticalAlignment="Center" IsVisible="{Binding Sidebar.IsExpanded}" />
                     </StackPanel>
                 </Button>
-
-                <TextBlock Text="SISTEMA" FontFamily="{DynamicResource FontMono}" FontSize="10.5" Foreground="{DynamicResource SideMutedBrush}"
-                           Margin="10,12,0,2" IsVisible="{Binding Sidebar.IsExpanded}" />
-                <Button Classes="navitem" Command="{Binding NavigateCommand}" CommandParameter="componentes"
-                        Classes.active="{Binding SelectedKey, Converter={StaticResource Equals}, ConverterParameter=componentes}"
-                        ToolTip.Tip="Componentes">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Viewbox Width="15" Height="15">
-                            <StackPanel Width="20" Height="20" VerticalAlignment="Center" Spacing="2.5">
-                                <Rectangle Height="3" RadiusX="1" RadiusY="1" Fill="{Binding $parent[Button].Foreground}" />
-                                <Rectangle Height="3" RadiusX="1" RadiusY="1" Fill="{Binding $parent[Button].Foreground}" Opacity="0.75" Margin="2,0" />
-                                <Rectangle Height="3" RadiusX="1" RadiusY="1" Fill="{Binding $parent[Button].Foreground}" Opacity="0.5" Margin="4,0" />
-                            </StackPanel>
-                        </Viewbox>
-                        <TextBlock Text="Componentes" VerticalAlignment="Center" IsVisible="{Binding Sidebar.IsExpanded}" />
-                    </StackPanel>
-                </Button>
             </StackPanel>
         </DockPanel>
     </Border>

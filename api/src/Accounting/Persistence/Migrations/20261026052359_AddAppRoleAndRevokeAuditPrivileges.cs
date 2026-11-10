@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Accounting.Persistence.Migrations
 {
     /// <inheritdoc />
-    // Rol de aplicacion separado del rol propietario/migraciones (tasks/plan-auditoria.md
-    // seccion 3.3): sin esto, "revocar UPDATE/DELETE sobre auditoria_contable al rol de la
-    // aplicacion" no es real — el propietario de una tabla siempre puede editarla/borrarla sin
-    // importar los REVOKE. Esta migracion sigue corriendo con el rol propietario (POSTGRES_USER);
-    // el rol nuevo (motor_contable_app) es el que usa la app en runtime desde Fase 3 en adelante.
+    // Rol de aplicacion separado del rol propietario/migraciones: sin esto, "revocar UPDATE/DELETE
+    // sobre auditoria_contable al rol de la aplicacion" no es real — el propietario de una tabla
+    // siempre puede editarla/borrarla sin importar los REVOKE. Esta migracion sigue corriendo con
+    // el rol propietario (POSTGRES_USER); el rol nuevo (motor_contable_app) es el que usa la app
+    // en runtime de aqui en adelante.
     public partial class AddAppRoleAndRevokeAuditPrivileges : Migration
     {
         private const string AppRole = "motor_contable_app";
@@ -21,7 +21,7 @@ namespace Accounting.Persistence.Migrations
             var password = Environment.GetEnvironmentVariable("ACCOUNTING_APP_DB_PASSWORD")
                 ?? throw new InvalidOperationException(
                     $"La variable de entorno 'ACCOUNTING_APP_DB_PASSWORD' es obligatoria para crear/actualizar el rol " +
-                    $"'{AppRole}' (tasks/plan-auditoria.md seccion 3.3). No se hardcodea la contrasena en la migracion.");
+                    $"'{AppRole}'. No se hardcodea la contrasena en la migracion.");
 
             // CREATE ROLE/ALTER ROLE no son instrucciones validas dentro de un bloque PL/pgSQL
             // sin EXECUTE — por eso van envueltas en format()/EXECUTE, no como SQL directo.

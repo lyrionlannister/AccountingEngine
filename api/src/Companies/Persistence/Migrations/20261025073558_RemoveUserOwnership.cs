@@ -22,7 +22,7 @@ namespace Companies.Persistence.Migrations
 
             // La tabla "usuarios" NO se elimina: su ownership se traspasa a UsersDbContext
             // (módulo Users), que la conserva intacta en su propia InitialUsersSchema sin
-            // volver a crearla. Ver tasks/plan-users.md — "traspaso de ownership", Task 7.
+            // volver a crearla.
         }
 
         /// <inheritdoc />

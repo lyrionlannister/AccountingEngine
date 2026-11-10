@@ -14,7 +14,7 @@ namespace Users.Persistence.Migrations
         {
             // La tabla "usuarios" ya existe — fue creada por Companies' InitialCompaniesSchema y
             // su ownership se traspasó aquí (ver Companies' RemoveUserOwnership, que solo quita
-            // los FKs cruzando el límite de módulo, nunca la tabla). Ver tasks/plan-users.md.
+            // los FKs cruzando el límite de módulo, nunca la tabla).
         }
 
         /// <inheritdoc />

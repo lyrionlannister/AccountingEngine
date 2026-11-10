@@ -72,6 +72,7 @@ builder.Services.AddSignalR();
 builder.Services.AddExceptionHandler<AccountingExceptionHandler>();
 builder.Services.AddExceptionHandler<UsersExceptionHandler>();
 builder.Services.AddExceptionHandler<AuthExceptionHandler>();
+builder.Services.AddExceptionHandler<ApiContractExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddRateLimiter(options =>
